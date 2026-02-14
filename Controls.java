@@ -1,6 +1,6 @@
 /**
  * 
- *  [[ Controls.java (ControlsManager-M1) ]]
+ *  [[ Controls.java (ControlsManager-M2) ]]
  * ======================================================================
  *  
  *  ADD BINARY <name> <control>
@@ -11,7 +11,8 @@
  *      Controls.addThreshold(name,control,condition) - Adds a threshold control to the cache.
  *      Controls.get(name) - Fetches a control from the cache.
  *      Controls.getJoystickAngle(a_or_b,controller) - Gets Joystick A or B's angle. (For a_or_b, put "A" or "B", or "a" or "b")
- * 
+ *      Controls.getJoystickCondition(a_or_b,condition,controller) - Gets weither not a joystick condition is true. (Same rules for a_or_b)
+ *
  *  Binary Controls: (It's either pressed or not, only needs 0D conditions)
  *  - "A"
  *  - "B"
@@ -41,6 +42,21 @@
  *   - "LESS_THAN:30|GREATER_THAN_OR_EQUAL_TO:70.5" --> x < 30, x >= 70.5
  *   - "EQUAL_TO:2.75|EQUAL_TO:2.78" --> x == 2.75, x == 2.78
  *   - "RANGE:7,7.5" --> 7 <= x <= 7.5
+ *
+ *  Joystick Conditions
+ *  ----------------------------------------
+ *   Joystick condition strings can only contain one condition.
+ *
+ *   Condition types:
+ *    - "north"
+ *    - "northeast"
+ *    - "east"
+ *    - "southeast"
+ *    - "south"
+ *    - "southwest"
+ *    - "west"
+ *    - "northwest"
+ *
  */
 
 package frc.robot;
@@ -80,13 +96,64 @@ public class Controls {
     public static double getJoystickAngle(String A_or_B, XboxController controller) {
         switch(A_or_B.toLowerCase()) {
             case "a":
-                return Math.atan(controller.getLeftY()/controller.getLeftX());
+                return Math.atan2(controller.getLeftY(),controller.getLeftX())*180.0/Math.PI;
             case "b":
-                return Math.atan(controller.getRightY()/controller.getRightX());
+                return Math.atan2(controller.getRightY(),controller.getRightX())*180.0/Math.PI;
             default:
-                if(allowErrorPrinting) System.err.println("[ControlsManager] Unknown input - Expected A or B and got \"" + A_or_B + "\""); 
+                if(allowErrorPrinting) System.err.println("[ControlsManager] Unknown input - Expected A or B and got \"" + A_or_B + "\"");
         }
         return 0.0;
+    }
+
+    // Probably doesn't work, i'm not sure how the joysticks respond, just guessed
+    public static boolean getJoystickCondition(String A_or_B, String condition, XboxController controller) {
+        double x = 0.0;
+        double y = 0.0;
+        switch(A_or_B.toLowerCase()) {
+            case "a":
+                x = controller.getLeftX();
+                y = controller.getLeftY();
+                break;
+            case "b":
+                x = controller.getRightX();
+                y = controller.getRightY();
+                break;
+            default:
+                if(allowErrorPrinting) if(allowErrorPrinting) System.err.println("[ControlsManager] Unknown input - Expected A or B and got \"" + A_or_B + "\""); 
+        } 
+        boolean invert = (condition.charAt(0) == '!');
+        String c = !invert?condition:condition.split("!")[1];
+        boolean result = false;
+        double angle = Math.atan2(y,x)*180.0/Math.PI;
+        switch(c) {
+            case "east":
+                result = -22.5 < angle && angle < 22.5;
+                break;
+            case "northeast":
+                result = 22.5 < angle && angle < 67.5;
+                break;
+            case "north":
+                result = 67.5 < angle && angle < 112.5;
+                break;
+            case "northwest":
+                result = 112.5 < angle && angle < 157.5;
+                break;
+            case "west":
+                result = 157.5 < angle && angle < -157.5;
+                break;
+            case "southwest":
+                result = -175.5 < angle && angle < -112.5;
+                break;
+            case "south":
+                result = -112.5 < angle && angle < -67.5;
+                break;
+            case "southeast":
+                result = -67.5 < angle && angle < -22.5;
+                break;
+            default:
+                if(allowErrorPrinting) System.err.println("[ControlsManager] Unknown direction given: \"" + condition + "\"");
+        }
+        return invert?!result:result;
     }
 }
 
@@ -129,7 +196,7 @@ class Control {
                         return complexConditionTrue(condition,controller.getRightTriggerAxis());
                 }
         }
-        if(Controls.allowErrorPrinting) System.err.println("Unknown control type. (Type stored: " + type + ")");
+        if(Controls.allowErrorPrinting) System.err.println("[ControlsManager] Unknown control type. (Type stored: " + type + ")");
         return false;
     }
 
@@ -158,10 +225,9 @@ class Control {
             case "GREATER_THAN":
                 return value <= Double.parseDouble(split[1]);
         }
-        if(Controls.allowErrorPrinting) System.err.println("Unknown condition type: \"" + split[0] + "\"");
+        if(Controls.allowErrorPrinting) System.err.println("[ControlsManager] Unknown condition type: \"" + split[0] + "\"");
         return false;
     }
 
 
 }
-
