@@ -7,11 +7,12 @@
  * 
  * 
  *  Methods:
- *      Controls.addBinary(name,control)
- *      Controls.addThreshold(name,control,condition)
- *      Controls.get(name)
+ *      Controls.addBinary(name,control) - Adds a binary control to the cache
+ *      Controls.addThreshold(name,control,condition) - Adds a threshold control to the cache.
+ *      Controls.get(name) - Fetches a control from the cache.
+ *      Controls.getJoystickAngle(a_or_b,controller) - Gets Joystick A or B's angle. (For a_or_b, put "A" or "B", or "a" or "b")
  * 
- *  Binary Controls:
+ *  Binary Controls: (It's either pressed or not, only needs 0D conditions)
  *  - "A"
  *  - "B"
  *  - "X"
@@ -19,7 +20,7 @@
  *  - "LB"
  *  - "RB"
  * 
- *  Threshold Controls:
+ *  Threshold Controls: (Gives a number, and requires 1D conditions)
  *  - "LT"
  *  - "RT"
  *
@@ -163,3 +164,4 @@ class Control {
 
 
 }
+
