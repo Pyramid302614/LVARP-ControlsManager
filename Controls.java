@@ -53,6 +53,8 @@ import frc.robot.Controls.ThresholdControls;
 
 public class Controls {
 
+    public static boolean allowErrorPrinting = true;
+
     private static HashMap<String,Control> controls = new HashMap<>();
     public static enum BinaryControls { A, B, X, Y, LB, RB };
     public static enum ThresholdControls { LT, RT };
@@ -74,6 +76,15 @@ public class Controls {
         return get(name).active(controller);
     }
 
+    public double getJoystickAngle(String A_or_B, XboxController controller) {
+        switch(A_or_B.toLowerCase()) {
+            case "a":
+                return Math.atan(controller.getLefY()/controller.getLeftX());
+            case "b":
+                return Math.atan(controller.getRightY()/controller.getRightX());
+            default:
+                if(allowErrorPrinting) System.err.println("[ControlsManager] Unknown input - Expected A or B and got \"" + A_or_B + "\""); 
+        }
 }
 
 class Control {
@@ -115,6 +126,7 @@ class Control {
                         return complexConditionTrue(condition,controller.getRightTriggerAxis());
                 }
         }
+        if(allowErrorPrinting) System.err.println("Unknown control type. (Type stored: " + type + ")");
         return false;
     }
 
@@ -143,7 +155,9 @@ class Control {
             case "GREATER_THAN":
                 return value <= Double.parseDouble(split[1]);
         }
+        if(allowErrorPrinting) System.err.println("Unknown condition type: \"" + split[0] + "\"");
         return false;
     }
+
 
 }
