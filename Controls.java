@@ -76,15 +76,17 @@ public class Controls {
         return get(name).active(controller);
     }
 
-    public double getJoystickAngle(String A_or_B, XboxController controller) {
+    public static double getJoystickAngle(String A_or_B, XboxController controller) {
         switch(A_or_B.toLowerCase()) {
             case "a":
-                return Math.atan(controller.getLefY()/controller.getLeftX());
+                return Math.atan(controller.getLeftY()/controller.getLeftX());
             case "b":
                 return Math.atan(controller.getRightY()/controller.getRightX());
             default:
                 if(allowErrorPrinting) System.err.println("[ControlsManager] Unknown input - Expected A or B and got \"" + A_or_B + "\""); 
         }
+        return 0.0;
+    }
 }
 
 class Control {
@@ -126,7 +128,7 @@ class Control {
                         return complexConditionTrue(condition,controller.getRightTriggerAxis());
                 }
         }
-        if(allowErrorPrinting) System.err.println("Unknown control type. (Type stored: " + type + ")");
+        if(Controls.allowErrorPrinting) System.err.println("Unknown control type. (Type stored: " + type + ")");
         return false;
     }
 
@@ -155,7 +157,7 @@ class Control {
             case "GREATER_THAN":
                 return value <= Double.parseDouble(split[1]);
         }
-        if(allowErrorPrinting) System.err.println("Unknown condition type: \"" + split[0] + "\"");
+        if(Controls.allowErrorPrinting) System.err.println("Unknown condition type: \"" + split[0] + "\"");
         return false;
     }
 
