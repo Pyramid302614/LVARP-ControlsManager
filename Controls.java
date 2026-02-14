@@ -18,7 +18,7 @@
  *      Controls.get(name) - Fetches a control from the cache.
  *      Controls.getJoystickAngle(a_or_b,controller) - Gets Joystick A or B's angle. (For a_or_b, put "A" or "B", or "a" or "b")
  *      Controls.getJoystickCondition(a_or_b,condition,controller) - Gets weither not a joystick condition is true. (Same rules for a_or_b)
- *
+ *      Controls.bindFunctionToControl(name,condition,onceOnTrue,function) - Binds a function to a control when a condition is true.
  *  Binary Controls: (It's either pressed or not, only needs 0D conditions)
  *  - "A"
  *  - "B"
@@ -63,6 +63,17 @@
  *    - "west"
  *    - "northwest"
  *
+ *  Binded Function Conditions
+ *  --------------------------------------------
+ *   Binded Function conditions are called Super Conditions. That's right, they are
+ *   super!! They are no different than threshold complex conditions, other than how they
+ *   have condition types for all types of controls.
+ * 
+ *  Threshold conditions:
+ *   (See above)
+ *  Binary conditions:
+ *   - "ACTIVE"
+ *   - "INACTIVE"
  */
 
 package frc.robot;
