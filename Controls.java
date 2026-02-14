@@ -1,9 +1,15 @@
 /**
  * 
- *  [[ Controls.java (ControlsManager-M2) ]]
+ *  [[ Controls.java (ControlsManager-M3) ]]
  * ======================================================================
  *  
- *  ADD BINARY <name> <control>
+ *  WARNING!!
+ *  I have never tested this code once, so either you can:
+ *  - trust that I am so intelligent that my code
+ *    will work flawlessly as I intended it to first try
+ *  - not trust this code one bit and stay far away from it
+ * 
+ *  Or a bonus, you could test it for me!! :o (W option, would give you aura)
  * 
  * 
  *  Methods:
@@ -63,6 +69,7 @@ package frc.robot;
 
 
 import java.util.HashMap;
+import java.util.function.Consumer;
 
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.Controls.BinaryControls;
@@ -71,6 +78,8 @@ import frc.robot.Controls.ThresholdControls;
 public class Controls {
 
     public static boolean allowErrorPrinting = true;
+
+    private static XboxController controller;
 
     private static HashMap<String,Control> controls = new HashMap<>();
     public static enum BinaryControls { A, B, X, Y, LB, RB };
@@ -86,14 +95,17 @@ public class Controls {
         controls.put(name,c);
         return c;
     }
+    public static void setController(XboxController controller_) {
+        controller = controller_;
+    }
     public static Control get(String name) {
         return controls.get(name);
     }
-    public static boolean active(String name, XboxController controller) {
+    public static boolean active(String name) {
         return get(name).active(controller);
     }
 
-    public static double getJoystickAngle(String A_or_B, XboxController controller) {
+    public static double getJoystickAngle(String A_or_B) {
         switch(A_or_B.toLowerCase()) {
             case "a":
                 return Math.atan2(controller.getLeftY(),controller.getLeftX())*180.0/Math.PI;
@@ -106,7 +118,7 @@ public class Controls {
     }
 
     // Probably doesn't work, i'm not sure how the joysticks respond, just guessed
-    public static boolean getJoystickCondition(String A_or_B, String condition, XboxController controller) {
+    public static boolean getJoystickCondition(String A_or_B, String condition) {
         double x = 0.0;
         double y = 0.0;
         switch(A_or_B.toLowerCase()) {
@@ -155,6 +167,26 @@ public class Controls {
         }
         return invert?!result:result;
     }
+
+    public static void bindFunctionToControl(String name, String condition, boolean executeOnceWhenBecomeTrue, Consumer<String> function) {
+        controls.get(name).bindFunction(function,condition,executeOnceWhenBecomeTrue);
+    }
+
+    public static void processAll() {
+        Control[] c = (Control[]) controls.entrySet().toArray(); // Chance of working: a decent 5%
+        for(int i = 0; i < c.length; i++) {
+            if(c[i].bindedFunctionConditionMet(controller)) {
+                if(
+                    (c[i].bindedFunctionExecuteOnce && !c[i].executedBindedFunctionOnLastProcess)
+                    || !c[i].bindedFunctionExecuteOnce)
+                        c[i].bindedFunction();
+                c[i].executedBindedFunctionOnLastProcess = true;
+            } else {
+                c[i].executedBindedFunctionOnLastProcess = false;
+            }
+        }
+    }
+
 }
 
 class Control {
@@ -162,6 +194,10 @@ class Control {
     BinaryControls binaryControl;
     ThresholdControls thresholdControl; String condition;
     String type;
+    Consumer<String> bindedFunction = null;
+    public boolean executedBindedFunctionOnLastProcess = false;
+    String bindedFunctionCondition;
+    public boolean bindedFunctionExecuteOnce;
 
     public Control(BinaryControls control) {
         this.binaryControl = control;
@@ -170,6 +206,20 @@ class Control {
     public Control(ThresholdControls control, String condition) {
         this.thresholdControl = control;
         type = "threshold";
+    }
+    public void bindedFunction() {
+        if(bindedFunction != null) {
+            bindedFunction.accept("");
+        }
+    }
+    public void bindFunction(Consumer<String> consumer,String condition,boolean once) {
+        this.bindedFunctionCondition = condition;
+        this.bindedFunctionExecuteOnce = once;
+        this.bindedFunction = consumer;
+    }
+    public boolean bindedFunctionConditionMet(XboxController controller) {
+        if(bindedFunction != null) return superConditionTrue(bindedFunctionCondition,controller);
+        else return false;
     }
     public boolean active(XboxController controller) {
         switch(type) {
@@ -200,7 +250,7 @@ class Control {
         return false;
     }
 
-    private boolean complexConditionTrue(String complex, double value) {
+    private static boolean complexConditionTrue(String complex, double value) {
         String[] conditions = complex.split("\\|");
         boolean output = true;
         for(int i = 0; i < conditions.length; i++) {
@@ -208,7 +258,7 @@ class Control {
         }
         return output;
     }
-    private boolean conditionTrue(String condition, double value) {
+    private static boolean conditionTrue(String condition, double value) {
         String[] split = condition.split(":");
         switch(split[0]) {
             case "RANGE":
@@ -226,6 +276,24 @@ class Control {
                 return value <= Double.parseDouble(split[1]);
         }
         if(Controls.allowErrorPrinting) System.err.println("[ControlsManager] Unknown condition type: \"" + split[0] + "\"");
+        return false;
+    }
+
+    private boolean superConditionTrue(String condition,XboxController controller) {
+        switch(type) {
+            case "binary":
+                if(condition.equals("ACTIVE")) return active(controller);
+                else if(condition.equals("INACTIVE")) return !active(controller);
+                break;
+            case "threshold":
+                switch(thresholdControl) {
+                    case LT:
+                        return complexConditionTrue(condition,controller.getLeftTriggerAxis());
+                    case RT:
+                        return complexConditionTrue(condition,controller.getRightTriggerAxis());
+                }
+        }
+        if(Controls.allowErrorPrinting) System.err.println("[ControlsManager] Invalid type or condition string.");
         return false;
     }
 
