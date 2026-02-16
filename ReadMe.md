@@ -14,6 +14,8 @@ To add this to a project, make sure to add package lines at the start of the fil
 `Controls.getJoystickCondition(joystickControl,condition,controller)` - Gets weither not a joystick condition is true.\
 `Controls.bindFunctionToControl(name,onceOnTrue,function)` - Binds a function to a control when it's condition is true.\
 `Controls.conditionResolve(name)` - Gets weither not the control's condition is true.\
+`Controls.controlsLogger(on)` - Turns on/off the Controls Logger, which gives output whenever a control's condition resolvation changes.\
+`Controls.inputLogger(on,suppressJoystickOutput)` - Turns on/off the Input Logger, which gives output whenever a controller component's value changes.\
 \
 `Control.conditionResolve()` - Get's weither not that control's condition is true.
 
@@ -25,10 +27,10 @@ Each control object has a:
 
 ## Control Types
 Control types are just the types of controls you can have.\
-Examples:
-`Controls.BinaryControls.A`
-`Controls.JoystickControls.B`
-`Controls.ThresholdControls.RT`
+Control Types:
+- Binary - 0 Dimensional - Either pressed or not pressed
+- Threshold - 1 Dimensional - Can be pressed with certain amounts of pressure (The reason I named it threshold is because you only make threshold conditions with it, so I named it that at first and never decided to change it)
+- Joystick - 2 Dimensional - 
 
 ## Conditions
 There are 2 types of conditions:
@@ -84,15 +86,25 @@ Condition types:
 - `southwest`
 - `west`
 - `northwest`
+- `north:x`
+- `northeast:x`
+- `east:x`
+- `southeast:x`
+- `south:x`
+- `southwest:x`
+- `west:x`
+- `northwest:x`
+(**x = distance from center threshold, inclusive, meaning it will resolve to true if the distance is x or greater**)
+(Put a '!' before the whole condition to invert it, to make things like !north, which would be true if it wasn't facing north)
 
-### Binded Function Conditions
-Binded Function conditions are called Super Conditions. That's right, they are
-super!! They are no different than threshold complex conditions, other than how they
-have condition types for all types of controls.
+### Controls and Input Logger
+The controls logger logs output when it detects a control's condition has changed. (The control must be in the cache for it to be detected)\
+**In order for these features to work, you must call `Controls.processAll()` in a loop, like `while(true)` or `robotPeriodic()`**
 
-Threshold conditions:
-- *(See section: Threshold Conditions)*
+## Binded Functions
+Binded functions are Consumer objects that store execution code for when certain control's conditions resolve.\
+**In order for this feature to work, you must call `Controls.processAll()` in a loop, like `while(true)` or `robotPeriodic()`**
 
-Binary conditions:
-- `ACTIVE`
-- `INACTIVE`
+To bind a function to a control, use `Controls.bindFunctionToControl(...)`.\
+Arguments:
+- `name` - Control name
