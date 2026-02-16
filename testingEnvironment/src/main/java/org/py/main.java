@@ -27,17 +27,16 @@ public class main {
         int selectedJID = sc.nextInt();
 
         XboxController controller = new XboxController();
-        Controls.setController(controller);
 
         // ControlsManager code here!!
-        Controls.addBinary("test",Controls.BinaryControls.A,"ACTIVE");
-        Controls.addThreshold("another_test",Controls.ThresholdControls.LT,"GREATER_THAN:0.0");
-        Controls.bindFunctionToControl("test",true,msa -> {
-            System.out.println("A button pressed!");
-        });
-        Controls.bindFunctionToControl("another_test",true,msa -> {
-            System.out.println("Left Trigger threshold passed!");
-        });
+        Controls.setController(controller);
+        Controls.controlsLogger(true);
+        Controls.addBinary("jump", Controls.BinaryComponents.A,"ACTIVE");
+        Controls.addBinary("exitMenu", Controls.BinaryComponents.B,"INACTIVE");
+        Controls.addThreshold("place", Controls.ThresholdComponents.LT,"GREATER_THAN:0.5");
+        Controls.addThreshold("break", Controls.ThresholdComponents.RT,"LESS_THAN:-0.5");
+        Controls.addJoystick("moveForward", Controls.JoystickComponents.A,"north:0.5");
+        Controls.addJoystick("turnButNotRightForSomeReason", Controls.JoystickComponents.B,"!east");
 
         GLFWGamepadState state = GLFWGamepadState.create();
 
@@ -50,8 +49,16 @@ public class main {
                 controller.y = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_Y) == 1;
                 controller.lb = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_LEFT_BUMPER) == 1;
                 controller.rb = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER) == 1;
+                controller.dl = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_LEFT) == 1;
+                controller.dr = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_RIGHT) == 1;
+                controller.du = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_UP) == 1;
+                controller.dd = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_DOWN) == 1;
                 controller.lt = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER);
-                controller.rt = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER);
+                controller.rt = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER);
+                controller.lx = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X);
+                controller.ly = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y);
+                controller.rx = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X);
+                controller.ry = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y);
             }
 
             Controls.processAll();
