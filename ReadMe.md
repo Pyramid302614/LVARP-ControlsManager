@@ -1,6 +1,9 @@
   # ControlsManager (Model 3)
 
 
+To add this to a project, make sure to add package lines at the start of the files!
+
+
 ### Methods
 
 `Controls.addBinary(name,control)` - Adds a binary control to the cache\
