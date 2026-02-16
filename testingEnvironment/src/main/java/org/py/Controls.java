@@ -2,37 +2,30 @@ package org.py;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 public class Controls {
 
-    public static boolean errorLoggerOn = true;
-    private static boolean controlsLoggerOn = false;
-    private static String controlsState = "";
-    private static String previousControlsState = "";
-    private static boolean inputLoggerOn = false;
-    private static String previousControllerState = XboxController.blankControllerState();
-    private static boolean suppressJoystickOutput = false;
+    public static boolean allowErrorPrinting = true;
 
     private static XboxController controller;
 
     private static HashMap<String,Control> controls = new HashMap<>();
-    public static enum BinaryComponents { A, B, X, Y, LB, RB };
-    public static enum ThresholdComponents { LT, RT };
-    public static enum JoystickComponents { A, B };
+    public static enum BinaryControls { A, B, X, Y, LB, RB };
+    public static enum ThresholdControls { LT, RT };
+    public static enum JoystickControls { A, B };
     
-    public static Control addBinary(String name, BinaryComponents control, String condition) {
+    public static Control addBinary(String name, BinaryControls control, String condition) {
         Control c = new Control(control,condition);
         controls.put(name,c);
         return c;
     }
-    public static Control addThreshold(String name, ThresholdComponents control, String condition) {
+    public static Control addThreshold(String name, ThresholdControls control, String condition) {
         Control c = new Control(control,condition);
         controls.put(name,c);
         return c;
     }
-    public static Control addJoystick(String name, JoystickComponents control, String condition) {
+    public static Control addJoystick(String name, JoystickControls control, String condition) {
         Control c = new Control(control, condition);
         controls.put(name,c);
         return c;
@@ -47,7 +40,7 @@ public class Controls {
         return get(name).conditionResolve(controller);
     }
 
-    public static double getJoystickAngle(JoystickComponents joystick) {
+    public static double getJoystickAngle(JoystickControls joystick) {
         switch(joystick) {
             case A:
                 return Math.atan2(controller.getLeftY(),controller.getLeftX())*180.0/Math.PI;
@@ -61,7 +54,7 @@ public class Controls {
     public static boolean getJoystickCondition(Control joystick, String condition) {
         double x = 0.0;
         double y = 0.0;
-        switch(joystick.joystickComponent) {
+        switch(joystick.joystickControl) {
             case A:
                 x = controller.getLeftX();
                 y = controller.getLeftY();
@@ -75,36 +68,34 @@ public class Controls {
         String c = !invert?condition:condition.split("!")[1];
         boolean result = false;
         double angle = Math.atan2(y,x)*180.0/Math.PI;
-        String direction = c.split(":")[0];
-        switch(direction) {
+        switch(c) {
             case "east":
                 result = -22.5 < angle && angle < 22.5;
                 break;
-            case "southeast":
+            case "northeast":
                 result = 22.5 < angle && angle < 67.5;
                 break;
-            case "south":
+            case "north":
                 result = 67.5 < angle && angle < 112.5;
                 break;
-            case "southwest":
+            case "northwest":
                 result = 112.5 < angle && angle < 157.5;
                 break;
             case "west":
                 result = (157.5 < angle && angle < 180.0) || (-180.0 < angle && angle < -157.5);
                 break;
-            case "northwest":
+            case "southwest":
                 result = -175.5 < angle && angle < -112.5;
                 break;
-            case "north":
+            case "south":
                 result = -112.5 < angle && angle < -67.5;
                 break;
-            case "northeast":
+            case "southeast":
                 result = -67.5 < angle && angle < -22.5;
                 break;
             default:
-                if(errorLoggerOn) System.err.println("[ControlsManager:ErrorLogger] Unknown direction given: \"" + condition + "\"");
+                if(allowErrorPrinting) System.err.println("[ControlsManager] Unknown direction given: \"" + condition + "\"");
         }
-        if(c.split(":").length > 1 && Math.sqrt(x*x+y*y) < Double.parseDouble(c.split(":")[1])) result = false;
         return invert?!result:result;
     }
 
@@ -115,102 +106,45 @@ public class Controls {
 
     @SuppressWarnings("unchecked")
     public static void processAll() {
-        if(controller != null) {
-            Map.Entry<String,Control>[] c = controls.entrySet().toArray(new Map.Entry[0]);
-            for(int i = 0; i < c.length; i++) {
-                if(c[i].getValue().conditionResolve(controller)) {
-                    if(!c[i].getValue().bindedFunctionExecuteOnce || !c[i].getValue().executedBindedFunctionOnLastProcess)
-                        c[i].getValue().bindedFunction();
-                    c[i].getValue().executedBindedFunctionOnLastProcess = true;
-                } else {
-                    c[i].getValue().executedBindedFunctionOnLastProcess = false;
-                }
+        Map.Entry<String,Control>[] c = controls.entrySet().toArray(new Map.Entry[0]); // Chance of working: a decent 5%
+        for(int i = 0; i < c.length; i++) {
+            if(c[i].getValue().conditionResolve(controller)) {
+                if(!c[i].getValue().bindedFunctionExecuteOnce || !c[i].getValue().executedBindedFunctionOnLastProcess)
+                    c[i].getValue().bindedFunction();
+                c[i].getValue().executedBindedFunctionOnLastProcess = true;
+            } else {
+                c[i].getValue().executedBindedFunctionOnLastProcess = false;
             }
-            if(controlsLoggerOn) {
-                String[] past = previousControlsState.split(",");
-                controlsState = "";
-                for(int i = 0; i < c.length; i++) {
-                    boolean v = c[i].getValue().conditionResolve(controller);
-                    controlsState += v + (i != c.length-1?",":"");
-                    if(i < past.length && past[i].equals("true") != v) {
-                        System.out.println("[ControlsManager:ControlsLogger] Control \"" + c[i].getKey() + "\" new state detected: " + v);
-                    }
-                }
-                previousControlsState = controlsState;
-            }
-            controller.updateControllerState();
-            if(inputLoggerOn) {
-                if(!Objects.equals(previousControllerState, controller.controllerState)) {
-                    String[] controlOrder = {
-                        "A Button",
-                        "B Button",
-                        "X Button",
-                        "Y Button",
-                        "Left Bumper",
-                        "Right Bumper",
-                        "Left Trigger",
-                        "Right Trigger",
-                        "Joystick A X",
-                        "Joystick A Y",
-                        "Joystick B X",
-                        "Joystick B Y"
-                    };
-                    String[] past = previousControllerState.split(",");
-                    String[] now = controller.controllerState.split(",");
-                    for(int i = 0; i < now.length; i++) {
-                        if(i < past.length && !Objects.equals(past[i],now[i])) {
-                            if(!suppressJoystickOutput || !controlOrder[i].split(" ")[0].equals("Joystick")) System.out.println("[ControlsManager:InputLogger] " + controlOrder[i] + " new state detected: " + now[i]);
-                        }
-                    }
-                }
-            }
-            previousControllerState = controller.controllerState;
         }
     }
-
-
-    public static void controlsLogger(boolean on) {
-        controlsLoggerOn = on;
-        System.out.println("[ControlsManager:ControlLogger] Controls Logger set to: " + on);
-    }
-    public static void inputLogger(boolean on, boolean suppressJoystickOutput) {
-        inputLoggerOn = on;
-        Controls.suppressJoystickOutput = suppressJoystickOutput;
-        System.out.println("[ControlsManager:InputLogger] Input Logger set to: " + on);
-    }
-    public static void errorLogger(boolean on) {
-        errorLoggerOn = on;
-        System.out.println("[ControlsManager:ErrorLogger] Error Logger set to: " + on);
-    }
-
 
 }
 
 class Control {
 
-    public Controls.BinaryComponents binaryComponent;
-    public Controls.ThresholdComponents thresholdComponent;
-    public Controls.JoystickComponents joystickComponent;
+    public Controls.BinaryControls binaryControl;
+    public Controls.ThresholdControls thresholdControl;
+    public Controls.JoystickControls joystickControl;
     
-    private String condition;
-    private String type;
+    String condition;
+    String type;
 
-    private Consumer<String> bindedFunction = null;
+    Consumer<String> bindedFunction = null;
     public boolean executedBindedFunctionOnLastProcess = false;
     public boolean bindedFunctionExecuteOnce;
 
-    public Control(Controls.BinaryComponents component, String condition) {
-        this.binaryComponent = component;
+    public Control(Controls.BinaryControls control, String condition) {
+        this.binaryControl = control;
         this.condition = condition;
         this.type = "binary";
     }
-    public Control(Controls.ThresholdComponents component, String condition) {
-        this.thresholdComponent = component;
+    public Control(Controls.ThresholdControls control, String condition) {
+        this.thresholdControl = control;
         this.condition = condition;
         type = "threshold";
     }
-    public Control(Controls.JoystickComponents component, String condition) {
-        this.joystickComponent = component;
+    public Control(Controls.JoystickControls control, String condition) {
+        this.joystickControl = control;
         this.condition = condition;
         type = "joystick";
     }
@@ -226,7 +160,7 @@ class Control {
     public boolean conditionResolve(XboxController controller) {
         switch(type) {
             case "binary":
-                switch(binaryComponent) {
+                switch(binaryControl) {
                     case A:
                         return complexConditionTrue(condition,controller.getAButton()?1.0:0.0,type);
                     case B:
@@ -241,7 +175,7 @@ class Control {
                         return complexConditionTrue(condition,controller.getRightBumperButton()?1.0:0.0,type);
                 }
             case "threshold":
-                switch(thresholdComponent) {
+                switch(thresholdControl) {
                     case LT:
                         return complexConditionTrue(condition,controller.getLeftTriggerAxis(),"threshold");
                     case RT:
@@ -250,7 +184,7 @@ class Control {
             case "joystick":
                 return complexConditionTrue(condition,0,"joystick");
         }
-        if(Controls.errorLoggerOn) System.err.println("[ControlsManager:ErrorLogger] Unknown control type. (Type stored: " + type + ")");
+        if(Controls.allowErrorPrinting) System.err.println("[ControlsManager] Unknown control type. (Type stored: " + type + ")");
         return false;
     }
 
@@ -291,28 +225,8 @@ class Control {
             case "joystick":
                 return Controls.getJoystickCondition(this,condition);
         }
-        if(Controls.errorLoggerOn) System.err.println("[ControlsManager:ErrorLogger] Unknown condition type: \"" + split[0] + "\"");
+        if(Controls.allowErrorPrinting) System.err.println("[ControlsManager] Unknown condition type: \"" + split[0] + "\"");
         return false;
-    }
-
-    public Control setCondition(String complexCondition) {
-        condition = complexCondition;
-        return this;
-    }
-    public Control setComponent(Controls.BinaryComponents control) {
-        binaryComponent = control;
-        type = "binary";
-        return this;
-    }
-    public Control setComponent(Controls.ThresholdComponents control) {
-        thresholdComponent = control;
-        type = "threshold";
-        return this;
-    }
-    public Control setComponent(Controls.JoystickComponents control) {
-        joystickComponent = control;
-        type = "joystick";
-        return this;
     }
 
 
