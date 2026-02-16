@@ -6,32 +6,61 @@ To add this to a project, make sure to add package lines at the start of the fil
 
 ### Methods
 
-`Controls.addBinary(name,control)` - Adds a binary control to the cache\
+`Controls.addBinary(name,control,condition)` - Adds a binary control to the cache\
 `Controls.addThreshold(name,control,condition)` - Adds a threshold control to the cache.\
+`Controls.addJoystick(name,control,condition)` - Adds a joystick control to the cache.\
 `Controls.get(name)` - Fetches a control from the cache.\
-`Controls.getJoystickAngle(a_or_b,controller)` - Gets Joystick A or B's angle. (For a_or_b, put "A" or "B", or "a" or "b")\
-`Controls.getJoystickCondition(a_or_b,condition,controller)` - Gets weither not a joystick condition is true.\
-`Controls.bindFunctionToControl(name,condition,onceOnTrue,function)` - Binds a function to a control when a condition is true.
+`Controls.getJoystickAngle(joystickControl)` - Gets Joystick A or B's angle.\
+`Controls.getJoystickCondition(joystickControl,condition,controller)` - Gets weither not a joystick condition is true.\
+`Controls.bindFunctionToControl(name,onceOnTrue,function)` - Binds a function to a control when it's condition is true.\
+`Controls.conditionResolve(name)` - Gets weither not the control's condition is true.\
+\
+`Control.conditionResolve()` - Get's weither not that control's condition is true.
 
+## `Control` Object
+
+Each control object has a:
+- Control Type (Binary, Threshold, Joystick)
+- Condition (Complex)
+
+## Control Types
+Control types are just the types of controls you can have.\
+Examples:
+`Controls.BinaryControls.A`
+`Controls.JoystickControls.B`
+`Controls.ThresholdControls.RT`
+
+## Conditions
+There are 2 types of conditions:
+- Condition (The regular one)
+- Complex Condition
+
+Conditions are formatted as `<type>:<value>`
+For example, x > 3 would be formatted as `GREATER_THAN:3` and x <= 5.2 would be `LESS_THAN_OR_EQUAL_TO:5.2`
+However, you can only use condition types that go with your control type. (See below for condition types)
+To have multiple conditions in one, you need to make a complex condition. These are all of your conditions
+seperated by '|'s (Vertical Pipes)
+Example: `GREATER_THAN:3|LESS_THAN_OR_EQUAL_TO:5.2`\
+**Important!** All conditions within complex condition must be true for it to resolve! In other words, the '|' is an AND operator, not an OR one.
  
 ### Binary Controls
-It's either pressed or not, only needs 0D conditions
-  - `A`
-  - `B`
-  - `X`
-  - `Y`
-  - `LB`
-  - `RB`
+Control types:
+- `A`
+- `B`
+- `X`
+- `Y`
+- `LB`
+- `RB`
+
+Condition types:
+- `ACTIVE`
+- `INACTIVE`
 
  
 ### Threshold Controls
-Gives a number, therefore requires 1D conditions
+Control types:
   - `LT`
   - `RT`
-
-### Threshold Conditions
-Threshold condition strings can contain one or more conditions to form
-a Complex Condition. <Seperate conditions with '|' (Vertical Pipe)>
 
 Condition types:
 - `LESS_THAN:x`
@@ -41,14 +70,11 @@ Condition types:
 - `GREATER_THAN_OR_EQUAL_TO:x`
 - `RANGE:x,y` (Inclusive, meaning it can equal x or y)  
 
-Example complex conditions: (Condition Strings)
-- `"LESS_THAN:30|GREATER_THAN_OR_EQUAL_TO:70.5"` --> x < 30, x >= 70.5
-- `"EQUAL_TO:2.75|EQUAL_TO:2.78"`--> x == 2.75, x == 2.78
-- `"RANGE:7,7.5"` --> 7 <= x <= 7.5
-
-### Joystick Conditions
-Joystick condition strings can only contain one condition.
-
+### Joystick Controls
+Control Types:
+- `A` (Leftmost joystick)
+- `B` (Rightmost joystick)
+- 
 Condition types:
 - `north`
 - `northeast`
