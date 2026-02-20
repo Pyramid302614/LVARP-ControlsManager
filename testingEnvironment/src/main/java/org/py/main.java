@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class main {
 
-    private static XboxController controller;
+    private static Controller controller;
 
     public static void main(String[] args) {
 
@@ -22,21 +22,31 @@ public class main {
                 System.out.println(jid + " | " + GLFW.glfwGetJoystickName(jid));
             }
         }
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Selected joystick: ");
-        int selectedJID = sc.nextInt();
 
-        XboxController controller = new XboxController();
+        int selectedJID = -1;
+        for(int i = 0; i < 15; i++) {
+            if(GLFW.glfwJoystickPresent(i)) {
+                String name = GLFW.glfwGetJoystickName(i);
+                if(name != null) if(name.toLowerCase().contains("controller")) {
+                    GLFWGamepadState s = GLFWGamepadState.create();
+                    GLFW.glfwGetGamepadState(i,s);
+                    if(s.buttons(GLFW.GLFW_GAMEPAD_BUTTON_A) == 1) {
+                        System.out.println("Selected controller with JID " + i);
+                        selectedJID = i;
+                    }
+                }
+            }
+        }
+        if(selectedJID == -1) {
+            Scanner sc = new Scanner(System.in);
+            System.out.print("Select joystick: ");
+            selectedJID = sc.nextInt();
+            System.out.println("Selected controller with JID " + selectedJID);
+        }
 
-        // ControlsManager code here!!
-        Controls.setController(controller);
-        Controls.controlsLogger(true);
-        Controls.addBinary("jump", Controls.BinaryComponents.A,"ACTIVE");
-        Controls.addBinary("exitMenu", Controls.BinaryComponents.B,"INACTIVE");
-        Controls.addThreshold("place", Controls.ThresholdComponents.LT,"GREATER_THAN:0.5");
-        Controls.addThreshold("break", Controls.ThresholdComponents.RT,"LESS_THAN:-0.5");
-        Controls.addJoystick("moveForward", Controls.JoystickComponents.A,"north:0.5");
-        Controls.addJoystick("turnButNotRightForSomeReason", Controls.JoystickComponents.B,"!east");
+        Controller controller = new Controller();
+
+        new Sandbox(controller);
 
         GLFWGamepadState state = GLFWGamepadState.create();
 
@@ -53,12 +63,17 @@ public class main {
                 controller.dr = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_RIGHT) == 1;
                 controller.du = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_UP) == 1;
                 controller.dd = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_DOWN) == 1;
+                controller.ja = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_LEFT_THUMB) == 1;
+                controller.jb = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_RIGHT_THUMB) == 1;
+                controller.sa = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_BACK) == 1;
+                controller.sb = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_START) == 1;
+                controller.bb = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_GUIDE) == 1;
                 controller.lt = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER);
                 controller.rt = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER);
-                controller.lx = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X);
-                controller.ly = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y);
-                controller.rx = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X);
-                controller.ry = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y);
+                controller.jax = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X);
+                controller.jay = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y);
+                controller.jby = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y);
+                controller.jbx = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X);
             }
 
             Controls.processAll();

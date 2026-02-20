@@ -2,26 +2,6 @@ package org.py;
 
 public class XboxController {
 
-    public String controllerState = blankControllerState();
-    public void updateControllerState() {
-        controllerState =
-                a + "," +
-                b + "," +
-                x + "," +
-                y + "," +
-                lb + "," +
-                rb + "," +
-                lt + "," +
-                rt + "," +
-                lx + "," +
-                ly + "," +
-                rx + "," +
-                ry + ",";
-    }
-    public static String blankControllerState() {
-        return "false,false,false,false,false,false,-1.0,-1.0,0.0,0.0,0.0,0.0";
-    }
-
     public boolean a = false; // A Button
     public boolean b = false; // B Button
     public boolean x = false; // X Button
@@ -63,6 +43,13 @@ public class XboxController {
         return lb;
     }
     public boolean getRightBumperButton() {
+        return rb;
+    }
+
+    public boolean getLeftStickButton() {
+        return lb;
+    }
+    public boolean getRightStickButton() {
         return rb;
     }
 

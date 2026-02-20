@@ -12,13 +12,13 @@ public class Controls {
     private static String controlsState = "";
     private static String previousControlsState = "";
     private static boolean inputLoggerOn = false;
-    private static String previousControllerState = XboxController.blankControllerState();
+    private static String previousControllerState;
     private static boolean suppressJoystickOutput = false;
 
-    private static XboxController controller;
+    private static Controller controller;
 
     private static HashMap<String,Control> controls = new HashMap<>();
-    public static enum BinaryComponents { A, B, X, Y, LB, RB };
+    public static enum BinaryComponents { A, B, X, Y, DL, DR, DU, DD, LB, RB, SA, SB, BB, JA, JB };
     public static enum ThresholdComponents { LT, RT };
     public static enum JoystickComponents { A, B };
     
@@ -37,7 +37,7 @@ public class Controls {
         controls.put(name,c);
         return c;
     }
-    public static void setController(XboxController controller_) {
+    public static void setController(Controller controller_) {
         controller = controller_;
     }
     public static Control get(String name) {
@@ -50,9 +50,9 @@ public class Controls {
     public static double getJoystickAngle(JoystickComponents joystick) {
         switch(joystick) {
             case A:
-                return Math.atan2(controller.getLeftY(),controller.getLeftX())*180.0/Math.PI;
+                return Math.atan2(controller.jay,controller.jax)*180.0/Math.PI;
             case B:
-                return Math.atan2(controller.getRightY(),controller.getRightX())*180.0/Math.PI;
+                return Math.atan2(controller.jby,controller.jbx)*180.0/Math.PI;
         }
         return 0.0;
     }
@@ -63,12 +63,12 @@ public class Controls {
         double y = 0.0;
         switch(joystick.joystickComponent) {
             case A:
-                x = controller.getLeftX();
-                y = controller.getLeftY();
+                x = controller.jax;
+                y = controller.jay;
                 break;
             case B:
-                x = controller.getRightX();
-                y = controller.getRightY();
+                x = controller.jbx;
+                y = controller.jby;
                 break;
         } 
         boolean invert = (condition.charAt(0) == '!');
@@ -141,21 +141,8 @@ public class Controls {
             controller.updateControllerState();
             if(inputLoggerOn) {
                 if(!Objects.equals(previousControllerState, controller.controllerState)) {
-                    String[] controlOrder = {
-                        "A Button",
-                        "B Button",
-                        "X Button",
-                        "Y Button",
-                        "Left Bumper",
-                        "Right Bumper",
-                        "Left Trigger",
-                        "Right Trigger",
-                        "Joystick A X",
-                        "Joystick A Y",
-                        "Joystick B X",
-                        "Joystick B Y"
-                    };
-                    String[] past = previousControllerState.split(",");
+                    String[] controlOrder = controller.controllerStateOrder;
+                    String[] past = (previousControllerState == null)?new String[0]:previousControllerState.split(",");
                     String[] now = controller.controllerState.split(",");
                     for(int i = 0; i < now.length; i++) {
                         if(i < past.length && !Objects.equals(past[i],now[i])) {
@@ -186,134 +173,3 @@ public class Controls {
 
 }
 
-class Control {
-
-    public Controls.BinaryComponents binaryComponent;
-    public Controls.ThresholdComponents thresholdComponent;
-    public Controls.JoystickComponents joystickComponent;
-    
-    private String condition;
-    private String type;
-
-    private Consumer<String> bindedFunction = null;
-    public boolean executedBindedFunctionOnLastProcess = false;
-    public boolean bindedFunctionExecuteOnce;
-
-    public Control(Controls.BinaryComponents component, String condition) {
-        this.binaryComponent = component;
-        this.condition = condition;
-        this.type = "binary";
-    }
-    public Control(Controls.ThresholdComponents component, String condition) {
-        this.thresholdComponent = component;
-        this.condition = condition;
-        type = "threshold";
-    }
-    public Control(Controls.JoystickComponents component, String condition) {
-        this.joystickComponent = component;
-        this.condition = condition;
-        type = "joystick";
-    }
-    public void bindedFunction() {
-        if(bindedFunction != null) {
-            bindedFunction.accept("");
-        }
-    }
-    public void bindFunction(Consumer<String> consumer,boolean once) {
-        this.bindedFunctionExecuteOnce = once;
-        this.bindedFunction = consumer;
-    }
-    public boolean conditionResolve(XboxController controller) {
-        switch(type) {
-            case "binary":
-                switch(binaryComponent) {
-                    case A:
-                        return complexConditionTrue(condition,controller.getAButton()?1.0:0.0,type);
-                    case B:
-                        return complexConditionTrue(condition,controller.getBButton()?1.0:0.0,type);
-                    case X:
-                        return complexConditionTrue(condition,controller.getXButton()?1.0:0.0,type);
-                    case Y:
-                        return complexConditionTrue(condition,controller.getYButton()?1.0:0.0,type);
-                    case LB:
-                        return complexConditionTrue(condition,controller.getLeftBumperButton()?1.0:0.0,type);
-                    case RB:
-                        return complexConditionTrue(condition,controller.getRightBumperButton()?1.0:0.0,type);
-                }
-            case "threshold":
-                switch(thresholdComponent) {
-                    case LT:
-                        return complexConditionTrue(condition,controller.getLeftTriggerAxis(),"threshold");
-                    case RT:
-                        return complexConditionTrue(condition,controller.getRightTriggerAxis(),"threshold");
-                }
-            case "joystick":
-                return complexConditionTrue(condition,0,"joystick");
-        }
-        if(Controls.errorLoggerOn) System.err.println("[ControlsManager:ErrorLogger] Unknown control type. (Type stored: " + type + ")");
-        return false;
-    }
-
-    private boolean complexConditionTrue(String complex, double value, String type) {
-        String[] conditions = complex.split("\\|");
-        boolean output = true;
-        for(int i = 0; i < conditions.length; i++) {
-            if(!conditionTrue(conditions[i],value,type)) output = false;
-        }
-        return output;
-    }
-    private boolean conditionTrue(String condition, double value, String type) { // Leaving value empty is ok for joysticks
-        String[] split = condition.split(":");
-        switch(type) {
-            case "threshold":
-                switch(split[0]) {
-                    case "RANGE":
-                        return Double.parseDouble(split[1].split(",")[0]) <= value
-                        && value <= Double.parseDouble(split[1].split(",")[1]);
-                    case "LESS_THAN":
-                        return value < Double.parseDouble(split[1]);
-                    case "LESS_THAN_OR_EQUAL_TO":
-                        return value <= Double.parseDouble(split[1]);
-                    case "EQUAL_TO":
-                        return value == Double.parseDouble(split[1]);
-                    case "GREATER_THAN_OR_EQUAL_TO":
-                        return value >= Double.parseDouble(split[1]);
-                    case "GREATER_THAN":
-                        return value > Double.parseDouble(split[1]);
-                }
-            case "binary":
-                switch(split[0]) {
-                    case "ACTIVE":
-                        return value == 1.0;
-                    case "INACTIVE":
-                        return value == 0.0;
-                }
-            case "joystick":
-                return Controls.getJoystickCondition(this,condition);
-        }
-        if(Controls.errorLoggerOn) System.err.println("[ControlsManager:ErrorLogger] Unknown condition type: \"" + split[0] + "\"");
-        return false;
-    }
-
-    public Control setCondition(String complexCondition) {
-        condition = complexCondition;
-        return this;
-    }
-    public Control setComponent(Controls.BinaryComponents control) {
-        binaryComponent = control;
-        type = "binary";
-        return this;
-    }
-    public Control setComponent(Controls.ThresholdComponents control) {
-        thresholdComponent = control;
-        type = "threshold";
-        return this;
-    }
-    public Control setComponent(Controls.JoystickComponents control) {
-        joystickComponent = control;
-        type = "joystick";
-        return this;
-    }
-
-
-}
