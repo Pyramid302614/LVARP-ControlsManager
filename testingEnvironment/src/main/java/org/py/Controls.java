@@ -108,9 +108,9 @@ public class Controls {
         return invert?!result:result;
     }
 
-    public static void bindFunctionToControl(String name, boolean executeOnceWhenBecomeTrue, boolean executeOnActive, Consumer<String> function) {
+    public static void bindFunctionToControl(String name, boolean executeOnceWhenBecomeTrue, boolean executeOnInactive, Consumer<String> function) {
         Control c = controls.get(name);
-        if(c != null) c.bindFunction(function,executeOnceWhenBecomeTrue,executeOnActive);
+        if(c != null) c.bindFunction(function,executeOnceWhenBecomeTrue,executeOnInactive);
     }
 
     @SuppressWarnings("unchecked")
@@ -123,20 +123,19 @@ public class Controls {
 
                 Control c = control.getValue();
                 String name = control.getKey();
-                boolean resolved = c.conditionResolve(controller);
-
-                if(controlsLoggerOn && c.conditionWasTrue != resolved) System.out.println("[ControlsManager:ControlsLogger] Control \"" + name + "\" new state detected: " + resolved);
+                c.conditionTrue = c.conditionResolve(controller);
+                if(controlsLoggerOn && (c.conditionWasTrue != c.conditionTrue)) System.out.println("[ControlsManager:ControlsLogger] Control \"" + name + "\" new state detected: " + c.conditionTrue);
                 c.process(controller); // Must be last, because this syncs conditionWasTrue for the next time it's called
 
             }
 
             // Input Logger
             for(Component component : controller.components) {
-                if(inputLoggerOn && component.value != component.previousValue) System.out.println("[ControlsManager:InputLogger] " + component.name + " new state detected: " + component.value);
+                if(inputLoggerOn && (component.value != component.previousValue)) System.out.println("[ControlsManager:InputLogger] " + component.name + " new state detected: " + component.value);
                 component.previousValue = component.value;
 
             }
-            if(!suppressJoystickOutput) for(Joystick joystick : controller.joysticks) {
+            if(inputLoggerOn && !suppressJoystickOutput) for(Joystick joystick : controller.joysticks) {
 
                 if(
                     (joystick.value.x != joystick.previousValue.x) ||

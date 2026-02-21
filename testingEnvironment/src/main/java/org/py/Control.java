@@ -9,6 +9,7 @@ public class Control {
     public Controls.JoystickComponents joystickComponent;
     
     private String condition;
+    public boolean conditionTrue;
     public boolean conditionWasTrue;
     private Controls.ComponentTypes type;
 
@@ -31,14 +32,15 @@ public class Control {
     }
 
     public void process(Controller controller) {
+        boolean resolved = conditionResolve(controller);
         if(bindedFunction != null) {
-            boolean resolved = conditionResolve(controller);
+            // ConditionTrue is set by ControlsLogger loop
             if(bindedFunction.once && resolved != conditionWasTrue)
-                if(bindedFunction.onInactive && !resolved) bindedFunction.execute();
+                if((bindedFunction.onInactive && !resolved)) bindedFunction.execute();
                 else if(!bindedFunction.onInactive && resolved) bindedFunction.execute();
             if(resolved && !bindedFunction.once) bindedFunction.execute();
-            conditionWasTrue = resolved;
         }
+        conditionWasTrue = resolved;
     }
 
     public void bindedFunction() {
@@ -54,6 +56,8 @@ public class Control {
                 return complexConditionTrue(condition,controller.getComponent(binaryComponent).value,type);
             case Threshold:
                 return complexConditionTrue(condition,controller.getComponent(thresholdComponent).value,type);
+            case Joystick:
+                return complexConditionTrue(condition,0.0,type); // Value doesn't matter
         }
         if(Controls.errorLoggerOn) System.err.println("[ControlsManager:ErrorLogger] Unknown control type. (Type stored: " + type + ")");
         return false;
