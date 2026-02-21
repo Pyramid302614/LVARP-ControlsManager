@@ -2,82 +2,66 @@ package org.py;
 
 public class Controller {
 
-    public String controllerState = updateControllerState();
-    public String updateControllerState() {
-        controllerState =
-            a + "," +
-            b + "," +
-            x + "," +
-            y + "," +
-            lb + "," +
-            rb + "," +
-            dl + "," +
-            dr + "," +
-            du + "," +
-            dd + "," +
-            ja + "," +
-            jb + "," +
-            sa + "," +
-            sb + "," +
-            bb + "," +
-            lt + "," +
-            rt + "," +
-            jax + "," +
-            jay + "," +
-            jbx + "," +
-            jby + ",";
-        return controllerState;
-    }
+    public Component[] components = {
 
-    public String[] controllerStateOrder = {
-        "Button A",
-        "Button B",
-        "Button X",
-        "Button Y",
-        "Left Trigger",
-        "Right Trigger",
-        "DPad Left",
-        "DPad Right",
-        "DPad Up",
-        "DPad Down",
-        "Joystick A Push",
-        "Joystick B Push",
-        "Special Button A",
-        "Special Button B",
-        "Big Button",
-        "Left Bumper",
-        "Right Bumper",
-        "Joystick A - X",
-        "Joystick A - Y",
-        "Joystick B - X",
-        "Joystick B - Y"
+            new Component("Button A", Controls.BinaryComponents.A),
+            new Component("Button B", Controls.BinaryComponents.B),
+            new Component("Button X", Controls.BinaryComponents.X),
+            new Component("Button Y", Controls.BinaryComponents.Y),
+
+            new Component("DPad Left", Controls.BinaryComponents.DL),
+            new Component("DPad Right", Controls.BinaryComponents.DR),
+            new Component("DPad Up", Controls.BinaryComponents.DU),
+            new Component("DPad Down", Controls.BinaryComponents.DD),
+
+            new Component("Joystick A Push", Controls.BinaryComponents.JA),
+            new Component("Joystick B Push", Controls.BinaryComponents.JB),
+
+            new Component("Special Button A", Controls.BinaryComponents.SA),
+            new Component("Special Button B", Controls.BinaryComponents.SB),
+            new Component("Big Button", Controls.BinaryComponents.BB),
+
+            new Component("Right Bumper", Controls.BinaryComponents.LB),
+            new Component("Right Bumper", Controls.BinaryComponents.RB),
+
+            new Component("Left Trigger", Controls.ThresholdComponents.LT),
+            new Component("Right Trigger", Controls.ThresholdComponents.RT),
+
+    };
+    Joystick[] joysticks = {
+
+        new Joystick("Joystick A",Controls.JoystickComponents.A),
+        new Joystick("Joystick B",Controls.JoystickComponents.B)
+
     };
 
-    // Binary Controls
-    public boolean a = false;
-    public boolean b = false;
-    public boolean x = false;
-    public boolean y = false;
-    public boolean dl = false;
-    public boolean dr = false;
-    public boolean du = false;
-    public boolean dd = false;
-    public boolean ja = false;
-    public boolean jb = false;
-    public boolean lb = false;
-    public boolean rb = false;
-    public boolean sa = false;
-    public boolean sb = false;
-    public boolean bb = false;
+    public void setValue(String name,double value) {
+        getComponent(name).value = value;
+    }
 
-    // Threshold Controls
-    public double lt = 0.0;
-    public double rt = 0.0;
-
-    // Joystick Controls
-    public double jax = 0.0;
-    public double jay = 0.0;
-    public double jbx = 0.0;
-    public double jby = 0.0;
+    public Component getComponent(String name) {
+        for(Component component : components) if(component.name.equals(name)) return component; return null;
+    }
+    public Joystick getJoystick(String name) {
+        for(Joystick joystick : joysticks) if(joystick.name.equals(name)) return joystick; return null;
+    }
+    public Component getComponent(Controls.BinaryComponents component) {
+        for(Component component_ : components)
+            if(component_.type == Controls.ComponentTypes.Binary && component_.binaryComponent == component)
+                return component_;
+        return null;
+    }
+    public Component getComponent(Controls.ThresholdComponents component) {
+        for(Component component_ : components)
+            if(component_.type == Controls.ComponentTypes.Threshold && component_.thresholdComponent == component)
+                return component_;
+        return null;
+    }
+    public Joystick getComponent(Controls.JoystickComponents component) {
+        for(Joystick joystick : joysticks)
+            if(joystick.component == component)
+                return joystick;
+        return null;
+    }
 
 }

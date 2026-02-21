@@ -9,10 +9,8 @@ public class Controls {
 
     public static boolean errorLoggerOn = true;
     private static boolean controlsLoggerOn = false;
-    private static String controlsState = "";
-    private static String previousControlsState = "";
     private static boolean inputLoggerOn = false;
-    private static String previousControllerState;
+
     private static boolean suppressJoystickOutput = false;
 
     private static Controller controller;
@@ -21,6 +19,7 @@ public class Controls {
     public static enum BinaryComponents { A, B, X, Y, DL, DR, DU, DD, LB, RB, SA, SB, BB, JA, JB };
     public static enum ThresholdComponents { LT, RT };
     public static enum JoystickComponents { A, B };
+    public static enum ComponentTypes { Binary, Threshold, Joystick };
     
     public static Control addBinary(String name, BinaryComponents control, String condition) {
         Control c = new Control(control,condition);
@@ -37,12 +36,15 @@ public class Controls {
         controls.put(name,c);
         return c;
     }
+
     public static void setController(Controller controller_) {
         controller = controller_;
     }
+
     public static Control get(String name) {
         return controls.get(name);
     }
+
     public static boolean conditionResolve(String name) {
         return get(name).conditionResolve(controller);
     }
@@ -50,25 +52,23 @@ public class Controls {
     public static double getJoystickAngle(JoystickComponents joystick) {
         switch(joystick) {
             case A:
-                return Math.atan2(controller.jay,controller.jax)*180.0/Math.PI;
+                return Math.atan2(controller.getComponent("Joystick A - Y").value,controller.getComponent("Joystick A - X").value)*180.0/Math.PI;
             case B:
-                return Math.atan2(controller.jby,controller.jbx)*180.0/Math.PI;
+                return Math.atan2(controller.getComponent("Joystick B - X").value,controller.getComponent("Joystick B - Y").value)*180.0/Math.PI;
         }
         return 0.0;
     }
-
-    // Probably doesn't work, i'm not sure how the joysticks respond, just guessed
     public static boolean getJoystickCondition(Control joystick, String condition) {
         double x = 0.0;
         double y = 0.0;
         switch(joystick.joystickComponent) {
             case A:
-                x = controller.jax;
-                y = controller.jay;
+                x = controller.getComponent(JoystickComponents.A).value.x;
+                y = controller.getComponent(JoystickComponents.A).value.y;
                 break;
             case B:
-                x = controller.jbx;
-                y = controller.jby;
+                x = controller.getComponent(JoystickComponents.B).value.x;
+                y = controller.getComponent(JoystickComponents.B).value.y;
                 break;
         } 
         boolean invert = (condition.charAt(0) == '!');
@@ -108,50 +108,44 @@ public class Controls {
         return invert?!result:result;
     }
 
-    public static void bindFunctionToControl(String name, boolean executeOnceWhenBecomeTrue, Consumer<String> function) {
+    public static void bindFunctionToControl(String name, boolean executeOnceWhenBecomeTrue, boolean executeOnActive, Consumer<String> function) {
         Control c = controls.get(name);
-        if(c != null) c.bindFunction(function,executeOnceWhenBecomeTrue);
+        if(c != null) c.bindFunction(function,executeOnceWhenBecomeTrue,executeOnActive);
     }
 
     @SuppressWarnings("unchecked")
     public static void processAll() {
         if(controller != null) {
-            Map.Entry<String,Control>[] c = controls.entrySet().toArray(new Map.Entry[0]);
-            for(int i = 0; i < c.length; i++) {
-                if(c[i].getValue().conditionResolve(controller)) {
-                    if(!c[i].getValue().bindedFunctionExecuteOnce || !c[i].getValue().executedBindedFunctionOnLastProcess)
-                        c[i].getValue().bindedFunction();
-                    c[i].getValue().executedBindedFunctionOnLastProcess = true;
-                } else {
-                    c[i].getValue().executedBindedFunctionOnLastProcess = false;
-                }
+
+            // Controls Logger
+            Map.Entry<String,Control>[] controls = Controls.controls.entrySet().toArray(new Map.Entry[0]);
+            for(Map.Entry<String,Control> control : controls) {
+
+                Control c = control.getValue();
+                String name = control.getKey();
+                boolean resolved = c.conditionResolve(controller);
+
+                if(controlsLoggerOn && c.conditionWasTrue != resolved) System.out.println("[ControlsManager:ControlsLogger] Control \"" + name + "\" new state detected: " + resolved);
+                c.process(controller); // Must be last, because this syncs conditionWasTrue for the next time it's called
+
             }
-            if(controlsLoggerOn) {
-                String[] past = previousControlsState.split(",");
-                controlsState = "";
-                for(int i = 0; i < c.length; i++) {
-                    boolean v = c[i].getValue().conditionResolve(controller);
-                    controlsState += v + (i != c.length-1?",":"");
-                    if(i < past.length && past[i].equals("true") != v) {
-                        System.out.println("[ControlsManager:ControlsLogger] Control \"" + c[i].getKey() + "\" new state detected: " + v);
-                    }
-                }
-                previousControlsState = controlsState;
+
+            // Input Logger
+            for(Component component : controller.components) {
+                if(inputLoggerOn && component.value != component.previousValue) System.out.println("[ControlsManager:InputLogger] " + component.name + " new state detected: " + component.value);
+                component.previousValue = component.value;
+
             }
-            controller.updateControllerState();
-            if(inputLoggerOn) {
-                if(!Objects.equals(previousControllerState, controller.controllerState)) {
-                    String[] controlOrder = controller.controllerStateOrder;
-                    String[] past = (previousControllerState == null)?new String[0]:previousControllerState.split(",");
-                    String[] now = controller.controllerState.split(",");
-                    for(int i = 0; i < now.length; i++) {
-                        if(i < past.length && !Objects.equals(past[i],now[i])) {
-                            if(!suppressJoystickOutput || !controlOrder[i].split(" ")[0].equals("Joystick")) System.out.println("[ControlsManager:InputLogger] " + controlOrder[i] + " new state detected: " + now[i]);
-                        }
-                    }
-                }
+            if(!suppressJoystickOutput) for(Joystick joystick : controller.joysticks) {
+
+                if(
+                    (joystick.value.x != joystick.previousValue.x) ||
+                    (joystick.value.y != joystick.previousValue.y)
+                ) System.out.println("[ControlsManager:InputLogger] " + joystick.name + " new state detected: " + joystick.value.toString());
+                joystick.previousValue.x = joystick.value.x;
+                joystick.previousValue.y = joystick.value.y;
+
             }
-            previousControllerState = controller.controllerState;
         }
     }
 

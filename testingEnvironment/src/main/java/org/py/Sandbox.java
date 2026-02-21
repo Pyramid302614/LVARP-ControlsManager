@@ -6,6 +6,7 @@ public class Sandbox {
 
         Controls.setController(controller);
 
+//        Controls.inputLogger(true,false);
         Controls.controlsLogger(true);
 
         Controls.addBinary("a",Controls.BinaryComponents.A,"ACTIVE");
