@@ -40,3 +40,8 @@ Conditions are stored like this:
 * `northwest:x` - Resolve if the joystick is going northwest, x away from the center\
 **(⚠️ Joysticks don't always go back to the center, and nor do your fingers! Make sure to set thresholds of about 0.1 - 0.5 from the center)**\
 Typical error from center: 0.000005, enough to be considered "north" if no threshold specified
+
+### Loggers
+**ControlsLogger:** Logs whenever a control's resolve state changes.
+**InputLogger:** Logs whenever a controller component's state changes.
+**ErrorLogger:** Tells you if anything goes wrong.
