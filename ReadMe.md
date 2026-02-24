@@ -19,7 +19,7 @@ An **XboxController** is WPILib' controller class.
 
 ## Conditions
 Conditions are stored like this:
-`"<TYPE>:<VALUE>|<TYPE>:<VALUE>|..."` (A condition can only resolve if ALL of the individual conditions seperated by '|' (Pipes) resolve.)
+`"<TYPE>:<VALUE>|<TYPE>:<VALUE>&..."` (Seperate conditions with | and &. | = OR, & = AND)
 ### Binary Conditions
 * `ACTIVE` - Resolves if value is 1.0
 * `INACTIVE` - Resolves if value is 0.0
@@ -53,6 +53,21 @@ Bound Functions have the following properties:
 **ControlsLogger:** Logs whenever a control's resolve state changes.
 **InputLogger:** Logs whenever a controller component's state changes.
 **ErrorLogger:** Tells you if anything goes wrong.
+
+## Running ControlsManager
+### Input
+There are two modes of input detecting: GLFW, and WPI.
+WPI Mode uses the XboxController class, managed by WPILib.
+GLFW Mode uses GLFW to detect joysticks (Controllers)
+
+### Input Interface
+In Main.java, there are 2 variables to determine the selection mode. (BOTH OF THESE ARE NOT SUPPORTED IN WPI MODE)
+
+name-to-select
+start-to-select
+
+Name-to-select auto-selects based on name. This is good if you are only using one controller. Things it looks for: "controller", "logitech"
+Start-to-select allows controllers to get selected if they press the start button.
 
 ## Components
 ```
