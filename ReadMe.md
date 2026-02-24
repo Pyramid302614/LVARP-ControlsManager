@@ -1,5 +1,7 @@
 # ControlsManager Model 4
 
+## ⚠️ Files in main directory are old, go to testingEnvironment
+
 ## Adding this to your project
 To add this to a project, simply take the files and plop them in somewhere, and then update the package.____ in each file.
 
