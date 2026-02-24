@@ -1,149 +1,145 @@
 package org.py;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class Controls {
 
+    public static final int model = 4;
+
     public static boolean errorLoggerOn = true;
     private static boolean controlsLoggerOn = false;
     private static boolean inputLoggerOn = false;
+    private static final ArrayList<Integer> inputLoggerControllers = new ArrayList<>();
 
     private static boolean suppressJoystickOutput = false;
 
-    private static Controller controller;
+    private static ArrayList<Controller> controllers;
 
-    private static HashMap<String,Control> controls = new HashMap<>();
-    public static enum BinaryComponents { A, B, X, Y, DL, DR, DU, DD, LB, RB, SA, SB, BB, JA, JB };
-    public static enum ThresholdComponents { LT, RT };
-    public static enum JoystickComponents { A, B };
-    public static enum ComponentTypes { Binary, Threshold, Joystick };
-    
-    public static Control addBinary(String name, BinaryComponents control, String condition) {
-        Control c = new Control(control,condition);
-        controls.put(name,c);
+    private static final ArrayList<Control> controls = new ArrayList<>();
+
+    public enum BinaryComponents { A, B, X, Y, DL, DR, DU, DD, LB, RB, SA, SB, BB, JA, JB };
+    public enum ThresholdComponents { LT, RT };
+    public enum JoystickComponents { A, B };
+    public enum ComponentTypes { Binary, Threshold, Joystick };
+
+
+    private static int[] allControllers() {
+        int[] c = new int[controllers.size()];
+        for(int i = 0; i < c.length; i++) c[i] = i+1;
         return c;
     }
-    public static Control addThreshold(String name, ThresholdComponents control, String condition) {
-        Control c = new Control(control,condition);
-        controls.put(name,c);
-        return c;
+    public static void addBinaryControl(String name, BinaryComponents component, String condition) {
+        addBinaryControl(name,component,condition,allControllers());
     }
-    public static Control addJoystick(String name, JoystickComponents control, String condition) {
-        Control c = new Control(control, condition);
-        controls.put(name,c);
-        return c;
+    public static void addBinaryControl(String name, BinaryComponents component) {
+        addBinaryControl(name,component,"ACTIVE",allControllers());
+    }
+    public static void addBinaryControl(String name, BinaryComponents component, int[] controllers) {
+        addBinaryControl(name,component,"ACTIVE",controllers);
+    }
+    public static void addBinaryControl(String name, BinaryComponents component, String condition, int[] controllers) {
+        Control c = new Control(name,component,condition,controllers);
+        controls.add(c);
+    }
+    public static void addThresholdControl(String name, ThresholdComponents component, String condition) {
+        addThresholdControl(name,component,condition,allControllers());
+    }
+    public static void addThresholdControl(String name, ThresholdComponents component) {
+        addThresholdControl(name,component,"GREATER_THAN:0",allControllers());
+    }
+    public static void addThresholdControl(String name, ThresholdComponents component, int[] controllers) {
+        addThresholdControl(name,component,"GREATER_THAN:0",controllers);
+    }
+    public static void addThresholdControl(String name, ThresholdComponents component, String condition, int[] controllers) {
+        Control c = new Control(name,component,condition,controllers);
+        controls.add(c);
+    }
+    public static void addJoystickControl(String name, JoystickComponents component, String condition) {
+        addJoystickControl(name,component,condition,allControllers());
+    }
+    public static void addJoystickControl(String name, JoystickComponents component, String condition, int[] controllers) {
+        Control c = new Control(name,component, condition, controllers);
+        controls.add(c);
     }
 
-    public static void setController(Controller controller_) {
-        controller = controller_;
+    public static void setController(Controller controller) {
+        ArrayList<Controller> c = new ArrayList<>(); c.add(controller);
+        controllers = c;
+    }
+    public static void setControllers(ArrayList<Controller> controllers) {
+        Controls.controllers = controllers;
+    }
+    public static void addController(Controller controller) {
+        controllers.add(controller);
     }
 
-    public static Control get(String name) {
-        return controls.get(name);
+    public static Control getControl(String name) {
+        for(int i = 0; i < controls.size(); i++) {
+            if(controls.get(i).name.equals(name)) return controls.get(i);
+        }
+        if(errorLoggerOn) System.out.println("[ControlsManager:ErrorLogger] conditionResolve("+name+") : invalid control name");
+        return null;
     }
 
     public static boolean conditionResolve(String name) {
-        return get(name).conditionResolve(controller);
+        Control c = getControl(name);
+        if(c != null) for(int i = 0; i < c.controllers.length; i++) {
+            if(c.conditionResolve(controllers.get(c.controllers[i]-1))) return true;
+        }
+        return false;
     }
 
-    public static double getJoystickAngle(JoystickComponents joystick) {
-        switch(joystick) {
-            case A:
-                return Math.atan2(controller.getComponent("Joystick A - Y").value,controller.getComponent("Joystick A - X").value)*180.0/Math.PI;
-            case B:
-                return Math.atan2(controller.getComponent("Joystick B - X").value,controller.getComponent("Joystick B - Y").value)*180.0/Math.PI;
-        }
-        return 0.0;
-    }
-    public static boolean getJoystickCondition(Control joystick, String condition) {
-        double x = 0.0;
-        double y = 0.0;
-        switch(joystick.joystickComponent) {
-            case A:
-                x = controller.getComponent(JoystickComponents.A).value.x;
-                y = controller.getComponent(JoystickComponents.A).value.y;
-                break;
-            case B:
-                x = controller.getComponent(JoystickComponents.B).value.x;
-                y = controller.getComponent(JoystickComponents.B).value.y;
-                break;
-        } 
-        boolean invert = (condition.charAt(0) == '!');
-        String c = !invert?condition:condition.split("!")[1];
-        boolean result = false;
-        double angle = Math.atan2(y,x)*180.0/Math.PI;
-        String direction = c.split(":")[0];
-        switch(direction) {
-            case "east":
-                result = -22.5 < angle && angle < 22.5;
-                break;
-            case "southeast":
-                result = 22.5 < angle && angle < 67.5;
-                break;
-            case "south":
-                result = 67.5 < angle && angle < 112.5;
-                break;
-            case "southwest":
-                result = 112.5 < angle && angle < 157.5;
-                break;
-            case "west":
-                result = (157.5 < angle && angle < 180.0) || (-180.0 < angle && angle < -157.5);
-                break;
-            case "northwest":
-                result = -175.5 < angle && angle < -112.5;
-                break;
-            case "north":
-                result = -112.5 < angle && angle < -67.5;
-                break;
-            case "northeast":
-                result = -67.5 < angle && angle < -22.5;
-                break;
-            default:
-                if(errorLoggerOn) System.err.println("[ControlsManager:ErrorLogger] Unknown direction given: \"" + condition + "\"");
-        }
-        if(c.split(":").length > 1 && Math.sqrt(x*x+y*y) < Double.parseDouble(c.split(":")[1])) result = false;
-        return invert?!result:result;
+    public static double getJoystickAngle(JoystickComponents joystick, int controller) {
+        return Math.atan2(controllers.get(controller-1).getComponent(joystick).value.y, controllers.get(controller-1).getComponent(joystick).value.x)*180.0/Math.PI;
     }
 
     public static void bindFunctionToControl(String name, boolean executeOnceWhenBecomeTrue, boolean executeOnInactive, Consumer<String> function) {
-        Control c = controls.get(name);
+        Control c = getControl(name);
         if(c != null) c.bindFunction(function,executeOnceWhenBecomeTrue,executeOnInactive);
+
     }
 
-    @SuppressWarnings("unchecked")
     public static void processAll() {
-        if(controller != null) {
 
-            // Controls Logger
-            Map.Entry<String,Control>[] controls = Controls.controls.entrySet().toArray(new Map.Entry[0]);
-            for(Map.Entry<String,Control> control : controls) {
-
-                Control c = control.getValue();
-                String name = control.getKey();
-                c.conditionTrue = c.conditionResolve(controller);
-                if(controlsLoggerOn && (c.conditionWasTrue != c.conditionTrue)) System.out.println("[ControlsManager:ControlsLogger] Control \"" + name + "\" new state detected: " + c.conditionTrue);
-                c.process(controller); // Must be last, because this syncs conditionWasTrue for the next time it's called
-
+        // Controls Logger
+        ArrayList<String> processedNames = new ArrayList<>();
+        for(Control control : controls) {
+            if(!processedNames.contains(control.name)) {
+                processedNames.add(control.name);
+                boolean resolved = false;
+                Control c = getControl(control.name);
+                if(c != null) {
+                    for(Integer controller : c.controllers) {
+                        if(c.conditionResolve(controllers.get(controller-1))) resolved = true; // OR Configuration (AND would be start as true, mark as false if it doesn't resolve)
+                    }
+                    control.conditionTrue = resolved;
+                    if(controlsLoggerOn && (control.conditionWasTrue != control.conditionTrue))
+                        System.out.println("[ControlsManager:ControlsLogger] Control \"" + control.name + "\" new state detected: " + control.conditionTrue);
+                    control.process(); // Contains boundFunction execution code
+                    control.conditionWasTrue = resolved;
+                }
             }
+        }
 
-            // Input Logger
-            for(Component component : controller.components) {
-                if(inputLoggerOn && (component.value != component.previousValue)) System.out.println("[ControlsManager:InputLogger] " + component.name + " new state detected: " + component.value);
-                component.previousValue = component.value;
+        // Input Logger
+        for(int i = 0; i < controllers.size(); i++) {
+            if(inputLoggerControllers.isEmpty() || inputLoggerControllers.contains(i+1)) {
+                Controller controller = controllers.get(i);
+                for(Component component : controller.components) {
+                    if(inputLoggerOn && (component.value != component.previousValue))
+                        System.out.println("[ControlsManager:InputLogger] Controller " + (i+1) + " - " + component.name + " new state detected: " + component.value);
+                    component.previousValue = component.value;
+                }
+                if(inputLoggerOn && !suppressJoystickOutput) for(Joystick joystick : controller.joysticks) {
+                    if(
+                            (joystick.value.x != joystick.previousValue.x) ||
+                                    (joystick.value.y != joystick.previousValue.y)
+                    ) System.out.println("[ControlsManager:InputLogger] Controller " + (i+1) + " - " + joystick.name + " new state detected: " + joystick.value.toString());
+                    joystick.previousValue.x = joystick.value.x;
+                    joystick.previousValue.y = joystick.value.y;
 
-            }
-            if(inputLoggerOn && !suppressJoystickOutput) for(Joystick joystick : controller.joysticks) {
-
-                if(
-                    (joystick.value.x != joystick.previousValue.x) ||
-                    (joystick.value.y != joystick.previousValue.y)
-                ) System.out.println("[ControlsManager:InputLogger] " + joystick.name + " new state detected: " + joystick.value.toString());
-                joystick.previousValue.x = joystick.value.x;
-                joystick.previousValue.y = joystick.value.y;
-
+                }
             }
         }
     }
@@ -157,6 +153,12 @@ public class Controls {
         inputLoggerOn = on;
         Controls.suppressJoystickOutput = suppressJoystickOutput;
         System.out.println("[ControlsManager:InputLogger] Input Logger set to: " + on);
+    }
+    public static void inputLogger(boolean on, boolean suppressJoystickOutput, int controller) {
+        inputLoggerOn = on;
+        inputLoggerControllers.add(controller);
+        Controls.suppressJoystickOutput = suppressJoystickOutput;
+        System.out.println("[ControlsManager:InputLogger] Input Logger set to: " + on + " (Controller " + controller + ")");
     }
     public static void errorLogger(boolean on) {
         errorLoggerOn = on;

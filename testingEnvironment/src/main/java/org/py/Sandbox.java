@@ -1,23 +1,26 @@
 package org.py;
 
+import java.util.ArrayList;
+
 public class Sandbox {
 
-    public Sandbox(Controller controller) {
+    public Sandbox(ArrayList<Controller> controllers) {
 
-        Controls.setController(controller);
+        Controls.setControllers(controllers);
 
-//        Controls.inputLogger(true,false);
-//        Controls.controlsLogger(true);
+        Controls.addBinaryControl("test", Controls.BinaryComponents.A, "ACTIVE");
 
-        Controls.addJoystick("test",Controls.JoystickComponents.B,"north:0.5");
+        // TODO: Add & and | in conditions
+        // TODO: Add linkage abilities
+        // TODO: Test bind functions (include non-once)
 
-        Controls.bindFunctionToControl("test",true,true,msa -> {
-            System.out.println("Hi!");
-        });
-//        Controls.bindFunctionToControl("a",true,msa -> {
-//            System.out.println("A pressed (once)");
-//        });
 
+    }
+    public static void sandboxProcess() {
+
+        if(Controls.conditionResolve("test")) {
+            System.out.println("Test is active!");
+        }
 
     }
 
