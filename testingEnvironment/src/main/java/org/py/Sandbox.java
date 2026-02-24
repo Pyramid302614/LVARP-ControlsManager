@@ -4,23 +4,17 @@ import java.util.ArrayList;
 
 public class Sandbox {
 
-    public Sandbox(ArrayList<Controller> controllers) {
+    public Sandbox() {
 
-        Controls.setControllers(controllers);
+        Controls.controlsLogger(true);
 
-        Controls.addBinaryControl("test", Controls.BinaryComponents.A, "ACTIVE");
+        Controls.addControl("test", Controls.BinaryComponents.A)
+                .linkControl(Controls.newControl("link-1", Controls.BinaryComponents.B));
 
-        // TODO: Add & and | in conditions
-        // TODO: Add linkage abilities
-        // TODO: Test bind functions (include non-once)
 
 
     }
     public static void sandboxProcess() {
-
-        if(Controls.conditionResolve("test")) {
-            System.out.println("Test is active!");
-        }
 
     }
 

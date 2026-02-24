@@ -38,11 +38,17 @@ public class Usage {
 
         // =========================  CONTROLS =========================
 
-        Controls.addBinaryControl("jump",Controls.BinaryComponents.A); // Defaults to "ACTIVE"
-        Controls.addBinaryControl("releaseJump",Controls.BinaryComponents.A,"INACTIVE");
-        Controls.addThresholdControl("shoot",Controls.ThresholdComponents.RT,"GREATER_THAN:0",new int[] { 1, 3 }); // Only for controllers 1 and 3
-        Controls.addThresholdControl("shoot",Controls.ThresholdComponents.RT); // Defaults to "GREATER_THAN:0"
-        Controls.addJoystickControl("moveForward",Controls.JoystickComponents.A,"north:0.5", new int[] { 2 }); // Only for controller 2
+        // You can add controls and any values you don't include will default to their default values
+        Controls.addControl("jump",Controls.BinaryComponents.A); // Defaults to "ACTIVE"
+        Controls.addControl("releaseJump",Controls.BinaryComponents.A,"INACTIVE");
+        Controls.addControl("shoot",Controls.ThresholdComponents.RT,"GREATER_THAN:0",new int[] { 1, 3 }); // Only for controllers 1 and 3
+        Controls.addControl("shoot",Controls.ThresholdComponents.RT); // Defaults to "GREATER_THAN:0"
+        Controls.addControl("moveForward",Controls.JoystickComponents.A,"north:0.5", new int[] { 2 }); // Only for controller 2
+
+        // You can link controls and both of them will have to be true for the control to resolve
+        Controls.addControl("cheatcode1",Controls.BinaryComponents.SA,new int[] { 1 })
+                .linkControl(Controls.newControl("cheatcode1-linked",Controls.ThresholdComponents.AX,"GREATER_THAN:0.5",new int[] { 2 }));
+                            // (Name doesn't matter)
 
         // ========================= FUNCTIONS =========================
 

@@ -1,5 +1,6 @@
 package org.py;
 
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class Control {
@@ -7,6 +8,8 @@ public class Control {
     public Controls.BinaryComponents binaryComponent;
     public Controls.ThresholdComponents thresholdComponent;
     public Controls.JoystickComponents joystickComponent;
+
+    public ArrayList<Control> linkedControls = new ArrayList<>();
 
     public int[] controllers;
     public String name;
@@ -40,6 +43,11 @@ public class Control {
         this.controllers = controllers;
     }
 
+    public Control linkControl(Control control) {
+        linkedControls.add(control);
+        return this;
+    }
+
     public void process() {
         if(boundFunction != null) {
             // ConditionTrue is set by ControlsLogger loop before all of this
@@ -71,21 +79,35 @@ public class Control {
         if(Controls.errorLoggerOn) System.err.println("[ControlsManager:ErrorLogger] Unknown control type. (Type stored: " + type + ")");
         return false;
     }
-    private boolean complexConditionTrue(String complex, double value, Controls.ComponentTypes type) {
-        String[] conditions = complex.split("\\|");
-        boolean output = true;
-        for(int i = 0; i < conditions.length; i++) {
-            if(!conditionTrue(conditions[i],value,type)) output = false;
+    private boolean complexConditionTrue(String complex, double doubleValue, DPoint dpointValue, String valueType, Controls.ComponentTypes type) {
+        ArrayList<String> conditions = new ArrayList<>();
+        ArrayList<Character> splits = new ArrayList<>();
+        String buffer = "";
+        for(int i = 0; i < complex.length(); i++) {
+            if(complex.charAt(i) == '|' || complex.charAt(i) == '&') {
+                splits.add(complex.charAt(i));
+                conditions.add(buffer);
+                buffer = "";
+            } else buffer += complex.charAt(i);
+            if(i == complex.length()-1) conditions.add(buffer);
         }
-        return output;
+        boolean outputBuffer = false;
+        if(valueType.equals("dpoint")) outputBuffer = conditionTrue(conditions.get(0),dpointValue,type);
+        else if(valueType.equals("double")) outputBuffer = conditionTrue(conditions.get(0),doubleValue,type);
+        for(int i = 1; i < conditions.size(); i++) {
+            boolean resolved = false;
+            if(valueType.equals("dpoint")) resolved = conditionTrue(conditions.get(i),dpointValue,type);
+            else if(valueType.equals("double")) resolved = conditionTrue(conditions.get(i),doubleValue,type);
+            if(splits.get(i-1) == '|') outputBuffer = outputBuffer || resolved;
+            else if(splits.get(i-1) == '&') outputBuffer = outputBuffer && resolved;
+        }
+        return outputBuffer;
+    }
+    private boolean complexConditionTrue(String complex, double value, Controls.ComponentTypes type) {
+        return complexConditionTrue(complex,value,new DPoint(0.0,0.0),"double",type);
     }
     private boolean complexConditionTrue(String complex, DPoint value, Controls.ComponentTypes type) {
-        String[] conditions = complex.split("\\|");
-        boolean output = true;
-        for(int i = 0; i < conditions.length; i++) {
-            if(!conditionTrue(conditions[i],value,type)) output = false;
-        }
-        return output;
+        return complexConditionTrue(complex,0.0,value,"dpoint",type);
     }
     private boolean conditionTrue(String condition, double value, Controls.ComponentTypes type) {
         String[] split = condition.split(":");

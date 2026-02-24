@@ -27,6 +27,11 @@ public class Controller {
             new Component("Left Trigger", Controls.ThresholdComponents.LT),
             new Component("Right Trigger", Controls.ThresholdComponents.RT),
 
+            new Component("Joystick A - X", Controls.ThresholdComponents.AX),
+            new Component("Joystick A - Y", Controls.ThresholdComponents.AY),
+            new Component("Joystick B - X", Controls.ThresholdComponents.BX),
+            new Component("Joystick B - Y", Controls.ThresholdComponents.BY)
+
     };
     Joystick[] joysticks = {
 

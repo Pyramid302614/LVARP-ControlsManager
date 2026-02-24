@@ -1,8 +1,15 @@
-package old;
+// WPILib's XboxController Mock
+
+package org.py;
 
 public class XboxController {
 
-    public boolean a = false; // A Button
+    public int port;
+    public XboxController(int port) {
+        this.port = port;
+    }
+
+    public boolean a = true; // A Button
     public boolean b = false; // B Button
     public boolean x = false; // X Button
     public boolean y = false; // Y Button
@@ -71,6 +78,39 @@ public class XboxController {
     }
     public double getRightTriggerAxis() {
         return rt;
+    }
+
+    public boolean getBackButton() {
+        return sa;
+    }
+    public boolean getStartButton() {
+        return sb;
+    }
+
+    // what the fuck wpilib
+    public boolean povLeft() {
+        return dl;
+    };
+    public boolean povUpLeft() {
+        return du && dl;
+    }
+    public boolean povUp() {
+        return du;
+    }
+    public boolean povUpRight() {
+        return du && dr;
+    }
+    public boolean povRight() {
+        return dr;
+    };
+    public boolean povDownRight() {
+        return dd && dr;
+    }
+    public boolean povDown() {
+        return dd;
+    }
+    public boolean povDownLeft() {
+        return dl;
     }
 
 }
