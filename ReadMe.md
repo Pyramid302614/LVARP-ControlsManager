@@ -41,6 +41,12 @@ Conditions are stored like this:
 **(⚠️ Joysticks don't always go back to the center, and nor do your fingers! Make sure to set thresholds of about 0.1 - 0.5 from the center)**\
 Typical error from center: 0.000005, enough to be considered "north" if no threshold specified
 
+### Binding Functions
+Bound Functions have the following properties:
+* Name - The name of the control they are bound to
+* Once - Weither not to execute only once when the condition becomes true, or to execute each time it's checked as true
+* OnInactive - Weither not to execute when the control's condition is false instead of true
+
 ### Loggers
 **ControlsLogger:** Logs whenever a control's resolve state changes.
 **InputLogger:** Logs whenever a controller component's state changes.
