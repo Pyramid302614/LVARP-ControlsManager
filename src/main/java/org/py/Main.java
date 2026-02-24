@@ -23,11 +23,11 @@ public class Main {
 
     // (!) Start-to-select and Name-to-select is not compatible with WPIMode.
 
-    public static void main(String[] args) {
+    public static ArrayList<Integer> selectedJIDs = new ArrayList<>(); // GLFW Mode
+    public static ArrayList<Controller> controllers = new ArrayList<>();
+    public static ArrayList<XboxControllerAdapter> xboxControllerAdapters = new ArrayList<>(); // WPI Mode
 
-        ArrayList<Integer> selectedJIDs = new ArrayList<>(); // GLFW Mode
-        ArrayList<Controller> controllers = new ArrayList<>();
-        ArrayList<XboxControllerAdapter> xboxControllerAdapters = new ArrayList<>(); // WPI Mode
+    public static void init() {
 
         System.out.println("============ ControlsManager Model " + Controls.model + " || Controller Selection ============");
 
@@ -141,58 +141,56 @@ public class Main {
 
         }
 
-
         Controls.setControllers(controllers);
         new Sandbox();
 
-        GLFWGamepadState state = GLFWGamepadState.create();
-
-        while(true) {
-
-            if(!wpiMode) for(int i = 0; i < selectedJIDs.size(); i++) {
-                Controller controller = controllers.get(i);
-                if(GLFW.glfwGetGamepadState(selectedJIDs.get(i),state)) {
-                    controller.getComponent(Controls.BinaryComponents.A).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_A);
-                    controller.getComponent(Controls.BinaryComponents.B).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_B);
-                    controller.getComponent(Controls.BinaryComponents.X).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_X);
-                    controller.getComponent(Controls.BinaryComponents.Y).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_Y);
-                    controller.getComponent(Controls.BinaryComponents.LB).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_LEFT_BUMPER);
-                    controller.getComponent(Controls.BinaryComponents.RB).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER);
-                    controller.getComponent(Controls.BinaryComponents.DL).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_LEFT);
-                    controller.getComponent(Controls.BinaryComponents.DR).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_RIGHT);
-                    controller.getComponent(Controls.BinaryComponents.DU).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_UP);
-                    controller.getComponent(Controls.BinaryComponents.DD).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_DOWN);
-                    controller.getComponent(Controls.BinaryComponents.JA).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_LEFT_THUMB);
-                    controller.getComponent(Controls.BinaryComponents.JB).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_RIGHT_THUMB);
-                    controller.getComponent(Controls.BinaryComponents.SA).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_BACK);
-                    controller.getComponent(Controls.BinaryComponents.SB).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_START);
-                    controller.getComponent(Controls.BinaryComponents.BB).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_GUIDE);
-                    controller.getComponent(Controls.ThresholdComponents.LT).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER);
-                    controller.getComponent(Controls.ThresholdComponents.RT).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER);
-                    controller.getComponent(Controls.ThresholdComponents.AX).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X);
-                    controller.getComponent(Controls.ThresholdComponents.BY).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y);
-                    controller.getComponent(Controls.ThresholdComponents.BX).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X);
-                    controller.getComponent(Controls.ThresholdComponents.AY).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y);
-                    controller.getComponent(Controls.JoystickComponents.A).value.x = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X);
-                    controller.getComponent(Controls.JoystickComponents.A).value.y = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y);
-                    controller.getComponent(Controls.JoystickComponents.B).value.x = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X);
-                    controller.getComponent(Controls.JoystickComponents.B).value.y = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y);
-                }
-            }
-            else for(int i = 0; i < xboxControllerAdapters.size(); i++) {
-                xboxControllerAdapters.get(i).sync();
-            }
-
-            Controls.processAll();
-            Sandbox.sandboxProcess();
-
-            sleep(20);
-        }
 
 
     }
 
-    private static void sleep(long ms) {
+    public static void process() {
+
+        if(!wpiMode) for(int i = 0; i < selectedJIDs.size(); i++) {
+            Controller controller = controllers.get(i);
+            GLFWGamepadState state = GLFWGamepadState.create();
+            if(GLFW.glfwGetGamepadState(selectedJIDs.get(i),state)) {
+                controller.getComponent(Controls.BinaryComponents.A).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_A);
+                controller.getComponent(Controls.BinaryComponents.B).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_B);
+                controller.getComponent(Controls.BinaryComponents.X).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_X);
+                controller.getComponent(Controls.BinaryComponents.Y).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_Y);
+                controller.getComponent(Controls.BinaryComponents.LB).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_LEFT_BUMPER);
+                controller.getComponent(Controls.BinaryComponents.RB).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER);
+                controller.getComponent(Controls.BinaryComponents.DL).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_LEFT);
+                controller.getComponent(Controls.BinaryComponents.DR).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_RIGHT);
+                controller.getComponent(Controls.BinaryComponents.DU).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_UP);
+                controller.getComponent(Controls.BinaryComponents.DD).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_DPAD_DOWN);
+                controller.getComponent(Controls.BinaryComponents.JA).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_LEFT_THUMB);
+                controller.getComponent(Controls.BinaryComponents.JB).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_RIGHT_THUMB);
+                controller.getComponent(Controls.BinaryComponents.SA).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_BACK);
+                controller.getComponent(Controls.BinaryComponents.SB).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_START);
+                controller.getComponent(Controls.BinaryComponents.BB).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_GUIDE);
+                controller.getComponent(Controls.ThresholdComponents.LT).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER);
+                controller.getComponent(Controls.ThresholdComponents.RT).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER);
+                controller.getComponent(Controls.ThresholdComponents.AX).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X);
+                controller.getComponent(Controls.ThresholdComponents.BY).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y);
+                controller.getComponent(Controls.ThresholdComponents.BX).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X);
+                controller.getComponent(Controls.ThresholdComponents.AY).value = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y);
+                controller.getComponent(Controls.JoystickComponents.A).value.x = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_X);
+                controller.getComponent(Controls.JoystickComponents.A).value.y = state.axes(GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y);
+                controller.getComponent(Controls.JoystickComponents.B).value.x = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X);
+                controller.getComponent(Controls.JoystickComponents.B).value.y = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y);
+            }
+        }
+        else for(int i = 0; i < xboxControllerAdapters.size(); i++) {
+            xboxControllerAdapters.get(i).sync();
+        }
+
+        Controls.processAll();
+        Sandbox.sandboxProcess();
+
+    }
+
+    public static void sleep(long ms) {
         try {
             Thread.sleep(ms);
         } catch(Exception ignored) {}
