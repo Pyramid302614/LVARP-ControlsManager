@@ -142,9 +142,6 @@ public class Main {
         }
 
         Controls.setControllers(controllers);
-        new Sandbox();
-
-
 
     }
 
@@ -186,7 +183,6 @@ public class Main {
         }
 
         Controls.processAll();
-        Sandbox.sandboxProcess();
 
     }
 
