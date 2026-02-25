@@ -1,4 +1,11 @@
-# ControlsManager Model 4.2
+```
+  __|              |             |        \  |
+ (      _ \    \    _|   _| _ \  | (_-<  |\/ |   _` |    \    _` |   _` |   -_)   _|
+\___| \___/ _| _| \__| _| \___/ _| ___/ _|  _| \__,_| _| _| \__,_| \__, | \___| _|
+```
+
+# ControlsManager Model 4.2 (`CMM4.2`)
+
 DON'T RELY ON THIS DOCUMENTATION IF YOU CAN JUST ASK ME! PLEASEEEEE
 
 ## Adding this to your project
