@@ -1,10 +1,31 @@
 # ControlsManager Model 4.2
 DON'T RELY ON THIS DOCUMENTATION IF YOU CAN JUST ASK ME! PLEASEEEEE
 
-## ⚠️ Files in main directory are old, go to testingEnvironment
-
 ## Adding this to your project
 To add this to a project, simply take the files and plop them in somewhere, and then update the package.____ in each file.
+
+## Running ControlsManager
+### Input
+There are two modes of input detecting: GLFW, and WPI.
+WPI Mode uses the XboxController class, managed by WPILib.
+GLFW Mode uses GLFW to detect joysticks (Controllers)
+
+### Input Interface
+In Main.java, there are 2 variables to determine the selection mode. (BOTH OF THESE ARE NOT SUPPORTED IN WPI MODE)
+Name-to-select automatically selects any controllers with "Controller" or "Logitech" in the name, and then finishes selection.
+Start-to-select allows controllers to be selected if they press and briefly hold the START button. Then, you can proceed to manual mode (console input) or finish selection.
+
+### WPI Mode vs GLFW Mode
+It's really simple.\
+GLFW Mode uses a modern input library called GLFW to detect input natively from your computer, which has a variety of tools and features to make selection simple and easy. (Still in maintainance and development as of 2026)\
+WPI Mode uses WPILib's sketchy input detection systems to detect controller input via XboxController class, which limits the ways you can select controllers down to one way. (By entering the controller's port number, which I don't really know what that would be, and Evan doesn't seem to either, he just says he puts 0 and 1, type shit.) However, if you love WPILib with all your heart, there are some features in ControlsManager to allow you to use it.
+
+### What's in the repository?
+Inside this repo is a Maven project that runs the testing environment. TestingEnvironment.java and Sandbox.java are purely for testing and debugging purposes. You do not need these. The project is a maven project because you need GLFW for it to work. HOWEVER! If GLFW fails, ControlsManager will automatically fallback to WPI Mode, which uses WPILib's classes for controller input.
+
+### Main.java
+Main.java contains the code necessary to select controllers. It's also basically a utility. You can do everything in Main.java yourself, but I don't really recommend that.
+Main.init() starts up the ControlsManager Controller Selection Interface, which has some options on the mode.
 
 ## Terminology
 A **Control** is a condition tied to a controller component that has to resolve for something to happen.
@@ -54,14 +75,6 @@ Bound Functions have the following properties:
 **InputLogger:** Logs whenever a controller component's state changes.
 **ErrorLogger:** Tells you if anything goes wrong.
 
-## Running ControlsManager
-### Input
-There are two modes of input detecting: GLFW, and WPI.
-WPI Mode uses the XboxController class, managed by WPILib.
-GLFW Mode uses GLFW to detect joysticks (Controllers)
-
-### Input Interface
-In Main.java, there are 2 variables to determine the selection mode. (BOTH OF THESE ARE NOT SUPPORTED IN WPI MODE)
 
 name-to-select
 start-to-select
