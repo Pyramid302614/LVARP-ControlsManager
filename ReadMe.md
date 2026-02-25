@@ -27,6 +27,8 @@ Inside this repo is a Maven project that runs the testing environment. TestingEn
 Main.java contains the code necessary to select controllers. It's also basically a utility. You can do everything in Main.java yourself, but I don't really recommend that.
 Main.init() starts up the ControlsManager Controller Selection Interface, which has some options on the mode.
 
+(⚠ Executing Main.init() will pause all execution on both WPI and GLFW Mode's manual mode and GLFW Mode's name-to-select mode.)
+
 ## Terminology
 A **Control** is a condition tied to a controller component that has to resolve for something to happen.
 A Controller **Component** is a button/trigger/bumper/joystick on a Controller.
