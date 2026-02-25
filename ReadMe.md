@@ -91,29 +91,41 @@ ID: The name of the component in it's enum thingy
 WPI Mode: If the control is supported in WPILib's XboxController class
 GLFW Mode: If the control is recognized by GLFW
 
+🟩
+GLFW: This component has been verified that it is detected by GLFW.
+WPI: There is a way to get this component's value in XboxController class.
+
+🟥
+GLFW: This component has been verified that it is not detected by GLFW, for any reason. (OS issues or GLFW issues)
+WPI: There is no way to get this component's value in XboxController class.
+
+🟨
+GLFW: (Everything about GLFW has been verified, there aren't any maybes here)
+WPI: This component maybe works, maybe doesn't. Idk ¯\_(ツ)_/¯
+
 Index  ID   Type     Name                  WPI Mode   GLFW Mode  Elaboration
-0:     A    Binary   "Button A"            ✓          ✓          A Button
-1:     B    Binary   "Button B"            ✓          ✓          B Button
-2:     X    Binary   "Button X"            ✓          ✓          X Button
-3:     Y    Binary   "Button Y"            ✓          ✓          Y Button
-4:     DL   Binary   "DPad Left"           ✓          ✓          Left DPad button
-5:     DR   Binary   "DPad Right"          ✓          ✓          Right DPad button
-6:     DU   Binary   "DPad Up"             ✓          ✓          Left DPad Up
-7:     DD   Binary   "DPad Down"           ✓          ✓          Left DPad Down
-8:     JA   Binary   "Joystick A Push"     ?          x           Pushing the Left Joystick
-9:     JB   Binary   "Joystick B Push"     ?          x           Pushing the Right Joystick
-10:    SA   Binary   "Special Button A"    ✓          ✓          Back Button (Left small button in the middle of the controller)
-11:    SB   Binary   "Special Button B"    ✓          ✓          Start Button (Right small button in the middle of the controller)
---:    (SC) Binary   "Special Button C"    x           x          Mode Switch (Lower left small button in the middle of the controller)
-12:    BB   Binary   "Big Button"          x           x          Mode Switch (Lower left small button in the middle of the controller) - (i) Xbox Gamebar overrides this button input 
-13:    LB   Binary   "Left Bumper"         ✓          ✓          Left Bumper
-14:    RB   Binary   "Right Bumper"        ✓          ✓          Right Bumper
-15:    LT   Theshold "Left Trigger"        ✓          ✓          Left Trigger   
-16:    RT   Theshold "Right Trigger"       ✓          ✓          Right Trigger
-17:    AX   Threshold "Joystick A - X"     ✓          ✓          Left Joystick's X axis
-18:    AY   Threshold "Joystick A - Y"     ✓          ✓          Left Joystick's Y axis
-19:    BX   Threshold "Joystick B - X"     ✓          ✓          Right Joystick's X axis
-20:    BY   Threshold "Joystick B - Y"     ✓          ✓          Right Joystick's Y axis
-21:    A    Joystick  "Joystick A"         ✓          ✓          Left Joystick
-22:    B    Joystick  "Joystick B"         ✓          ✓          Right Joystick
+0:     A    Binary   "Button A"            🟩         🟩         A Button
+1:     B    Binary   "Button B"            🟩         🟩         B Button
+2:     X    Binary   "Button X"            🟩         🟩         X Button
+3:     Y    Binary   "Button Y"            🟩         🟩         Y Button
+4:     DL   Binary   "DPad Left"           🟩         🟩         Left DPad button
+5:     DR   Binary   "DPad Right"          🟩         🟩         Right DPad button
+6:     DU   Binary   "DPad Up"             🟩         🟩         Left DPad Up
+7:     DD   Binary   "DPad Down"           🟩         🟩         Left DPad Down
+8:     JA   Binary   "Joystick A Push"     🟨         🟥         Pushing the Left Joystick
+9:     JB   Binary   "Joystick B Push"     🟨         🟥         Pushing the Right Joystick
+10:    SA   Binary   "Special Button A"    🟩         🟩         Back Button (Left small button in the middle of the controller)
+11:    SB   Binary   "Special Button B"    🟩         🟩         Start Button (Right small button in the middle of the controller)
+--:    (SC) Binary   "Special Button C"    🟥         🟥         Mode Switch (Lower left small button in the middle of the controller)
+12:    BB   Binary   "Big Button"          🟥         🟥         Big button in the middle of the controller - (i) Xbox Gamebar probably overrides this button input 
+13:    LB   Binary   "Left Bumper"         🟩         🟩         Left Bumper
+14:    RB   Binary   "Right Bumper"        🟩         🟩         Right Bumper
+15:    LT   Theshold "Left Trigger"        🟩         🟩         Left Trigger   
+16:    RT   Theshold "Right Trigger"       🟩         🟩         Right Trigger
+17:    AX   Threshold "Joystick A - X"     🟩         🟩         Left Joystick's X axis
+18:    AY   Threshold "Joystick A - Y"     🟩         🟩         Left Joystick's Y axis
+19:    BX   Threshold "Joystick B - X"     🟩         🟩         Right Joystick's X axis
+20:    BY   Threshold "Joystick B - Y"     🟩         🟩         Right Joystick's Y axis
+21:    A    Joystick  "Joystick A"         🟩         🟩         Left Joystick
+22:    B    Joystick  "Joystick B"         🟩         🟩         Right Joystick
 ```
