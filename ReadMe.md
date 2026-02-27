@@ -1,8 +1,8 @@
-Temporary
+![title](https://raw.githubusercontent.com/Pyramid302614/LVARP-ControlsManager/refs/heads/main/pictures/cmbanner.png)
 
-# ControlsManager Model 4.2 (`CMM4.2`)
+# Model 4.2 Documentation
 
-DON'T RELY ON THIS DOCUMENTATION IF YOU CAN JUST ASK ME! PLEASEEEEE
+**(DON'T RELY ON THIS DOCUMENTATION IF YOU CAN JUST ASK ME! PLEASEEEEE)**
 
 ## Adding this to your project
 To add this to a project, simply take the files and plop them in somewhere, and then update the package.____ in each file.
@@ -14,7 +14,7 @@ WPI Mode uses the XboxController class, managed by WPILib.
 GLFW Mode uses GLFW to detect joysticks (Controllers)
 
 ### Input Interface
-In Main.java, there are 2 variables to determine the selection mode. (BOTH OF THESE ARE NOT SUPPORTED IN WPI MODE)
+In `Main.java`, there are 2 variables to determine the selection mode. (BOTH OF THESE ARE NOT SUPPORTED IN WPI MODE)
 Name-to-select automatically selects any controllers with "Controller" or "Logitech" in the name, and then finishes selection.
 Start-to-select allows controllers to be selected if they press and briefly hold the START button. Then, you can proceed to manual mode (console input) or finish selection.
 
@@ -27,8 +27,8 @@ WPI Mode uses WPILib's sketchy input detection systems to detect controller inpu
 Inside this repo is a Maven project that runs the testing environment. TestingEnvironment.java and Sandbox.java are purely for testing and debugging purposes. You do not need these. The project is a maven project because you need GLFW for it to work. HOWEVER! If GLFW fails, ControlsManager will automatically fallback to WPI Mode, which uses WPILib's classes for controller input.
 
 ### Main.java
-Main.java contains the code necessary to select controllers. It's also basically a utility. You can do everything in Main.java yourself, but I don't really recommend that.
-Main.init() starts up the ControlsManager Controller Selection Interface, which has some options on the mode.
+`Main.java` contains the code necessary to select controllers. It's also basically a utility. You can do everything in `Main.java` yourself, but I don't really recommend that.
+`Main.init()` starts up the ControlsManager Controller Selection Interface, which has some options on the mode.
 
 (⚠ Executing Main.init() will pause all execution on both WPI and GLFW Mode's manual mode and GLFW Mode's name-to-select mode.)
 
