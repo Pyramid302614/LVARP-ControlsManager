@@ -18,8 +18,9 @@ public class Main {
 
     private static boolean wpiMode = false;
 
-    private static final boolean startToSelect = true; // Autoselects if joystick Start button (Special Button B) is pressed
+    private static final boolean startToSelect = false; // Autoselects if joystick Start button (Special Button B) is pressed
     private static final boolean nameToSelect = false; // Autoselects joystick if it contains "Controller" in the name (Recommended only if one controller is being used)
+    private static final boolean polywareToSelect = true; // Opens polyware for more user-friendly experience.
 
     // (!) Start-to-select and Name-to-select is not compatible with WPIMode.
 
@@ -28,6 +29,12 @@ public class Main {
     public static ArrayList<XboxControllerAdapter> xboxControllerAdapters = new ArrayList<>(); // WPI Mode
 
     public static void init() {
+
+        boolean manual = !(nameToSelect || startToSelect || polywareToSelect);
+        if(polywareToSelect) {
+            boolean migrateToManual = Polyware.controllerSelect();
+            if(migrateToManual) manual = true;
+        }
 
         System.out.println("============ ControlsManager Model " + Controls.model + " || Controller Selection ============");
 
@@ -51,8 +58,6 @@ public class Main {
             }
 
             if(detected == 0) System.out.println("<No controllers detected>");
-
-            boolean manual = !(nameToSelect || startToSelect);
 
             if(nameToSelect) {
                 System.out.println("\nEntering name-to-select mode.");
