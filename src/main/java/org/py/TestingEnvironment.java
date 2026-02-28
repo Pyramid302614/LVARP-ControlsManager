@@ -5,10 +5,11 @@ public class TestingEnvironment {
     public static void main(String[] args) {
         Main.init();
         new Sandbox();
-        Polyware.boot();
+        Polyware.bootDiagnostic();
         while(true) {
             Main.process();
             Sandbox.sandboxProcess();
+            Polyware.processDiagnostic();
             Main.sleep(20);
         }
     }

@@ -26,6 +26,8 @@ public class Polyware {
 
     public static void boot() {
 
+        System.out.println("[ControlsManager:Polyware] Opening new Polyware...");
+
         jf = new JFrame("ControlsManager Polyware");
         jp = new JPanel() {
             @Override
@@ -51,8 +53,9 @@ public class Polyware {
         jf.setVisible(true);
 
     }
-    public static void close() {
-
+    public static void exit() {
+        System.out.println("[ControlsManager:Polyware] Closing Polyware instance...");
+        jf.dispose();
     }
     public static void process() {
         if(mode != 0) jf.repaint();
@@ -68,6 +71,7 @@ public class Polyware {
     private static boolean[] justAddedJIDs = new boolean[16];
     private static double[][] aJumps = new double[16][2]; // T, C
     private static double[] selectorPos = new double[2]; // T, C
+    private static double[] selectorDim = new double[2]; // T, C
     public static void draw(Graphics g) {
         if(calSans == null) try {
             calSans = Font.createFont(
@@ -81,7 +85,7 @@ public class Polyware {
 
             g.setFont(calSans.deriveFont(40f));
             g.setColor(new Color(0,0,0));
-            g.drawString("Detected Controllers",20,30+20);
+            g.drawString("Controller Selection",20,30+20);
 
             // Focus indicator
             focusIndicator[0] = focused?10.0:0.0;
@@ -97,7 +101,11 @@ public class Polyware {
             g.setFont(calSans.deriveFont(19f));
             g.drawString("Press the left and right arrow keys to move between",20,jp.getHeight()-55);
             g.drawString("controllers. To select, press enter.",20,jp.getHeight()-30);
-
+            if(migrateToManual) {
+                g.setColor(new Color(207, 0, 255));
+                g.setFont(calSans.deriveFont(40f));
+                g.drawString("Migrating to manual",20,jp.getHeight()-90);
+            }
 
 
             Point mousePos = jp.getMousePosition();
@@ -106,17 +114,24 @@ public class Polyware {
 
             selectorPos[0] = selector*(100+20);
             selectorPos[1] += (selectorPos[0]-selectorPos[1])/5.0;
-            g.setColor(new Color(148,247,233));
+            selectorDim[1] += (selectorDim[0]-selectorDim[1])/3.0;
+            if(availableControllers == 0) selectorDim[0] = 0;
+            else selectorDim[0] = 110;
+            g.setColor(new Color(148, 209, 247));
             double stretch = (selectorPos[0]-selectorPos[1])/2;
+            int stretchXAdd = (stretch/(stretch==0?1:Math.abs(stretch))==-1)?(int)Math.round(stretch):0;
             g.fillRoundRect(
-                    20+(int)Math.round(selectorPos[1])-5+(int)Math.round(stretch/Math.abs(stretch)==-1?stretch:0),
-                    50+20-5,
-                    110+(int)Math.round(Math.abs(stretch)),
-                    110,
+                    20+50+(int)Math.round(selectorPos[1]-selectorDim[1]/2.0+stretchXAdd),
+                    50+50+20-(int)Math.round(selectorDim[1]/2.0),
+                    (int)Math.round(Math.abs(stretch))+(int)Math.round(selectorDim[1]),
+                    (int)Math.round(selectorDim[1]),
                     20,
                     20);
 
             int x = 0;
+
+//            System.out.println((int)Math.round(selectorPos[1]+(selectorDim[1]/-2.0)+(stretch/(Math.abs(stretch))==0?1:Math.abs(stretch))==-1?stretch:0));
+
             // Controller modules
             for(int jid = GLFW.GLFW_JOYSTICK_1; jid <= GLFW.GLFW_JOYSTICK_16; jid++) {
                 if(presentJIDs[jid]) {
@@ -167,15 +182,30 @@ public class Polyware {
                         aJumps[jid][0] = 0;
                     }
                     aJumps[jid][1] += (aJumps[jid][0]-aJumps[jid][1])/4;
-                    pos.y -= (int)aJumps[jid][1];
+                    int jumpAdd = -(int)aJumps[jid][1];
                     int jumpColorAdd = (int)aJumps[jid][1]*5;
 
+                    g.setColor(new Color(180-dimAmount,180-dimAmount+jumpColorAdd,180-dimAmount));
+                    g.fillRoundRect(pos.x,pos.y,dim.width,dim.height,20,20);
+
+                    if(selectedJIDs.contains(jid)) {
+                        g.setColor(new Color(0, 0, 0));
+                        g.setFont(calSans.deriveFont(30f));
+                        g.drawString(
+                                Integer.toString(selectedJIDs.indexOf(jid)+1),
+                                pos.x+dim.width/2,
+                                pos.y+180
+                        );
+                    }
+
+                    pos.y += jumpAdd;
                     g.setColor(new Color(200-dimAmount,200-dimAmount+jumpColorAdd,200-dimAmount));
                     g.fillRoundRect(pos.x,pos.y,dim.width,dim.height,20,20);
 
                     g.setColor(new Color(150-dimAmount,150-dimAmount+jumpColorAdd,150-dimAmount));
                     g.setFont(calSans.deriveFont(12f+(float)(moduleDimensions[jid][3]/2)));
                     g.drawString(Integer.toString(jid),pos.x+8,pos.y+8+(int)Math.round(12+moduleDimensions[jid][3]/2));
+
 
                     g.setColor(new Color(180-dimAmount,180-dimAmount+jumpColorAdd,180-dimAmount));
                     int[] oval = new int[] {
@@ -196,9 +226,14 @@ public class Polyware {
         }
     }
 
+    private static boolean migrateToManual = false;
     private static int glfwInitTimer = 0;
     private static int selector = 0;
-    public static boolean controllerSelect() {
+    private static int availableControllers = 0;
+    private static ArrayList<Integer> selectedJIDs = new ArrayList<>();
+    private static boolean run = true;
+    public static ArrayList<Integer> controllerSelect() {
+        System.out.println("[ControlsManager:Polyware] Set mode to 2 : Controller Seleciton.");
         mode = 2;
         boot();
         jf.addWindowFocusListener(new WindowFocusListener() {
@@ -214,35 +249,67 @@ public class Polyware {
         jf.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if(e.getKeyCode() == 37) {
+                if(availableControllers > 0) if(e.getKeyCode() == 37) {
                     if(selector != 0) selector--;
                 } else if(e.getKeyCode() == 39) {
-                    int available = 0;
+                    if(selector != availableControllers -1) selector++;
+                } else if(e.getKeyCode() == 10) {
+                    int index = -1;
                     for(int i = 0; i < 15; i++) {
-                        if(GLFW.glfwJoystickPresent(i)) available++;
+                        if(GLFW.glfwJoystickPresent(i)) index++;
+                        if(selector == index) {
+                            if(selectedJIDs.contains(i)) selectedJIDs.remove((Integer)i);
+                            else selectedJIDs.add(i);
+                            break;
+                        }
                     }
-                    if(selector != available-1) selector++;
+                } else if(e.getKeyCode() == 32) {
+                    run = false;
+                } else if(e.getKeyCode() == 77) {
+                    migrateToManual = !migrateToManual;
                 }
             }
         });
-        while(true) {
+        while(run) {
+            if(selector >= availableControllers && selector != 0) {
+                selector = availableControllers-1;
+            }
             for(int i = GLFW.GLFW_JOYSTICK_1; i < GLFW.GLFW_JOYSTICK_16; i++) {
                 previousPresentJIDs[i] = presentJIDs[i];
             }
             glfwInitTimer--;
             if(glfwInitTimer <= 0) {
                 glfwInitTimer = 100;
+                availableControllers = 0;
                 GLFW.glfwPollEvents();
                 for(int i = GLFW.GLFW_JOYSTICK_1; i < GLFW.GLFW_JOYSTICK_16; i++) {
                     presentJIDs[i] = GLFW.glfwJoystickPresent(i);
+                    if(GLFW.glfwJoystickPresent(i)) availableControllers++;
                 }
             }
             Main.sleep(10);
             for(int jid = 0; jid < 15; jid++) {
                 justAddedJIDs[jid] = presentJIDs[jid] != previousPresentJIDs[jid] && presentJIDs[jid];
+                if(previousPresentJIDs[jid] != presentJIDs[jid] && !presentJIDs[jid] && selectedJIDs.contains(jid)) selectedJIDs.remove((Integer)jid);
             }
-            jf.repaint();
+            if(jf != null) jf.repaint();
         }
+        exit();
+        jf = null;
+        jp = null;
+        selectedJIDs.add(0,migrateToManual?1:0);
+        return selectedJIDs;
     }
+
+
+
+    public static void bootDiagnostic() {
+        mode = 1;
+        boot();
+    }
+    public static void processDiagnostic() {
+        jf.repaint();
+    }
+
 
 }

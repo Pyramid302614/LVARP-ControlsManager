@@ -38,13 +38,18 @@ public class Main {
         }
 
         if(polywareToSelect) {
-            boolean migrateToManual = Polyware.controllerSelect();
-            if(migrateToManual) manual = true;
+            ArrayList<Integer> result = Polyware.controllerSelect();
+            boolean migrateToManual = result.get(0) == 1;
+            result.remove(0);
+            selectedJIDs = result;
+            if(migrateToManual) {
+                manual = true;
+            }
         } else {
             System.out.println("============ ControlsManager Model " + Controls.model + " || Controller Selection ============");
         }
 
-        if(!wpiMode) {
+        if(!wpiMode && !(polywareToSelect && !manual)) {
 
             System.out.println("\nGLFW initialized.");
 
