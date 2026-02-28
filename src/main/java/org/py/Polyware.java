@@ -5,6 +5,8 @@ import org.lwjgl.glfw.GLFWGamepadState;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.io.File;
@@ -31,6 +33,8 @@ public class Polyware {
                 draw(g);
             }
         };
+
+        jf.setIconImage(Toolkit.getDefaultToolkit().getImage(assetsDirectory+"/cmpolyware.png"));
 
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int padding = 20;
@@ -61,6 +65,9 @@ public class Polyware {
     private static double[][] moduleDimensions = new double[16][4]; // TW, CW, TH, CH
     private static boolean[] presentJIDs = new boolean[16];
     private static boolean[] previousPresentJIDs = new boolean[16];
+    private static boolean[] justAddedJIDs = new boolean[16];
+    private static double[][] aJumps = new double[16][2]; // T, C
+    private static double[] selectorPos = new double[2]; // T, C
     public static void draw(Graphics g) {
         if(calSans == null) try {
             calSans = Font.createFont(
@@ -71,7 +78,6 @@ public class Polyware {
             calSans = new Font("Arial",Font.PLAIN,12);
         }
         if(mode == 2) {
-            int x = 0;
 
             g.setFont(calSans.deriveFont(40f));
             g.setColor(new Color(0,0,0));
@@ -87,18 +93,42 @@ public class Polyware {
             g.fillRect(jp.getWidth()-f,0,f,jp.getHeight());
             g.fillRect(0,0,jp.getWidth(),f);
 
+            g.setColor(new Color(0,0,0));
+            g.setFont(calSans.deriveFont(19f));
+            g.drawString("Press the left and right arrow keys to move between",20,jp.getHeight()-55);
+            g.drawString("controllers. To select, press enter.",20,jp.getHeight()-30);
+
+
+
             Point mousePos = jp.getMousePosition();
             if(mousePos == null) mousePos = new Point(0,0);
 
+
+            selectorPos[0] = selector*(100+20);
+            selectorPos[1] += (selectorPos[0]-selectorPos[1])/5.0;
+            g.setColor(new Color(148,247,233));
+            double stretch = (selectorPos[0]-selectorPos[1])/2;
+            g.fillRoundRect(
+                    20+(int)Math.round(selectorPos[1])-5+(int)Math.round(stretch/Math.abs(stretch)==-1?stretch:0),
+                    50+20-5,
+                    110+(int)Math.round(Math.abs(stretch)),
+                    110,
+                    20,
+                    20);
+
+            int x = 0;
+            // Controller modules
             for(int jid = GLFW.GLFW_JOYSTICK_1; jid <= GLFW.GLFW_JOYSTICK_16; jid++) {
                 if(presentJIDs[jid]) {
-
                     boolean aPressed = false;
                     if(GLFW.glfwJoystickPresent(jid)) {
                         GLFWGamepadState s = GLFWGamepadState.create();
                         GLFW.glfwGetGamepadState(jid, s);
                         aPressed = s.buttons(GLFW.GLFW_GAMEPAD_BUTTON_A) == 1;
                     }
+
+                    int dimAmount = 0;
+                    if(!GLFW.glfwJoystickPresent(jid)) dimAmount = 50;
 
                     moduleDimensions[jid][1] += (moduleDimensions[jid][0]-moduleDimensions[jid][1])/5.0;
                     moduleDimensions[jid][3] += (moduleDimensions[jid][2]-moduleDimensions[jid][3])/5.0;
@@ -127,21 +157,27 @@ public class Polyware {
                         moduleDimensions[jid][0] = 0.0;
                         moduleDimensions[jid][2] = 0.0;
                     }
-                    if(previousPresentJIDs[jid] != presentJIDs[jid]) {
-                        if(presentJIDs[jid]) {
-                            moduleDimensions[jid][0] = 0.0;
-                            moduleDimensions[jid][2] = 0.0;
-                        }
+                    if(justAddedJIDs[jid]) {
+                        moduleDimensions[jid][1] = -dim.width;
+                        moduleDimensions[jid][3] = -dim.height;
                     }
+                    if(aPressed) {
+                        aJumps[jid][0] = 10;
+                    } else {
+                        aJumps[jid][0] = 0;
+                    }
+                    aJumps[jid][1] += (aJumps[jid][0]-aJumps[jid][1])/4;
+                    pos.y -= (int)aJumps[jid][1];
+                    int jumpColorAdd = (int)aJumps[jid][1]*5;
 
-                    g.setColor(new Color(200,200,200));
+                    g.setColor(new Color(200-dimAmount,200-dimAmount+jumpColorAdd,200-dimAmount));
                     g.fillRoundRect(pos.x,pos.y,dim.width,dim.height,20,20);
 
-                    g.setColor(new Color(150,150,150));
+                    g.setColor(new Color(150-dimAmount,150-dimAmount+jumpColorAdd,150-dimAmount));
                     g.setFont(calSans.deriveFont(12f+(float)(moduleDimensions[jid][3]/2)));
                     g.drawString(Integer.toString(jid),pos.x+8,pos.y+8+(int)Math.round(12+moduleDimensions[jid][3]/2));
 
-                    g.setColor(new Color(180,180,180));
+                    g.setColor(new Color(180-dimAmount,180-dimAmount+jumpColorAdd,180-dimAmount));
                     int[] oval = new int[] {
                             pos.x + (int) Math.round(dim.width * 0.20), // x
                             pos.y + (int) Math.round(dim.height * 0.20), // y
@@ -150,7 +186,7 @@ public class Polyware {
                     };
                     g.fillOval(oval[0],oval[1],oval[2],oval[3]);
 
-                    g.setColor(new Color(150,150,150));
+                    g.setColor(new Color(150-dimAmount,150-dimAmount+jumpColorAdd,150-dimAmount));
                     g.setFont(calSans.deriveFont(30f+(float)(moduleDimensions[jid][3])/2));
                     g.drawString("A",(int)Math.round(oval[0]+oval[2]/2.0-g.getFontMetrics().stringWidth("A")/2.0),(int)Math.round(oval[1]+oval[3]/2.0+dim.height*0.09));
                     x += 100+20;
@@ -161,6 +197,7 @@ public class Polyware {
     }
 
     private static int glfwInitTimer = 0;
+    private static int selector = 0;
     public static boolean controllerSelect() {
         mode = 2;
         boot();
@@ -174,19 +211,37 @@ public class Polyware {
                 focused = false;
             }
         });
+        jf.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode() == 37) {
+                    if(selector != 0) selector--;
+                } else if(e.getKeyCode() == 39) {
+                    int available = 0;
+                    for(int i = 0; i < 15; i++) {
+                        if(GLFW.glfwJoystickPresent(i)) available++;
+                    }
+                    if(selector != available-1) selector++;
+                }
+            }
+        });
         while(true) {
-            jf.repaint();
+            for(int i = GLFW.GLFW_JOYSTICK_1; i < GLFW.GLFW_JOYSTICK_16; i++) {
+                previousPresentJIDs[i] = presentJIDs[i];
+            }
             glfwInitTimer--;
             if(glfwInitTimer <= 0) {
                 glfwInitTimer = 100;
-                GLFW.glfwTerminate();
-                GLFW.glfwInit();
+                GLFW.glfwPollEvents();
                 for(int i = GLFW.GLFW_JOYSTICK_1; i < GLFW.GLFW_JOYSTICK_16; i++) {
-                    previousPresentJIDs[i] = presentJIDs[i];
                     presentJIDs[i] = GLFW.glfwJoystickPresent(i);
                 }
             }
             Main.sleep(10);
+            for(int jid = 0; jid < 15; jid++) {
+                justAddedJIDs[jid] = presentJIDs[jid] != previousPresentJIDs[jid] && presentJIDs[jid];
+            }
+            jf.repaint();
         }
     }
 
