@@ -31,17 +31,19 @@ public class Main {
     public static void init() {
 
         boolean manual = !(nameToSelect || startToSelect || polywareToSelect);
-        if(polywareToSelect) {
-            boolean migrateToManual = Polyware.controllerSelect();
-            if(migrateToManual) manual = true;
-        }
-
-        System.out.println("============ ControlsManager Model " + Controls.model + " || Controller Selection ============");
 
         if(!GLFW.glfwInit()) {
             System.out.println("Failed to initialize GLFW. Falling back to WPI mode.");
             wpiMode = true;
         }
+
+        if(polywareToSelect) {
+            boolean migrateToManual = Polyware.controllerSelect();
+            if(migrateToManual) manual = true;
+        } else {
+            System.out.println("============ ControlsManager Model " + Controls.model + " || Controller Selection ============");
+        }
+
         if(!wpiMode) {
 
             System.out.println("\nGLFW initialized.");
