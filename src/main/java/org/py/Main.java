@@ -11,6 +11,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWGamepadState;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -18,11 +19,14 @@ public class Main {
 
     private static boolean wpiMode = false;
 
-    private static final boolean startToSelect = false; // Autoselects if joystick Start button (Special Button B) is pressed
-    private static final boolean nameToSelect = false; // Autoselects joystick if it contains "Controller" in the name (Recommended only if one controller is being used)
-    private static final boolean polywareToSelect = true; // Opens polyware for more user-friendly experience.
+    public static HashMap<String,String> config = txtSon.getData(System.getProperty("/src/main/java/org/py/config.txt"));
+
+    private static final boolean startToSelect = config.get("selection--mode").equals("start-to-select"); // Autoselects if joystick Start button (Special Button B) is pressed
+    private static final boolean nameToSelect = config.get("selection--mode").equals("name-to-select"); // Autoselects joystick if it contains "Controller" in the name (Recommended only if one controller is being used)
+    private static final boolean polyware = config.get("selection--use-polyware").equals("true");
 
     // (!) Start-to-select and Name-to-select is not compatible with WPIMode.
+
 
     public static ArrayList<Integer> selectedJIDs = new ArrayList<>(); // GLFW Mode
     public static ArrayList<Controller> controllers = new ArrayList<>();
@@ -30,131 +34,129 @@ public class Main {
 
     public static void init() {
 
-        boolean manual = !(nameToSelect || startToSelect || polywareToSelect);
+        if(polyware) {
 
-        if(!GLFW.glfwInit()) {
-            System.out.println("Failed to initialize GLFW. Falling back to WPI mode.");
-            wpiMode = true;
-        }
+            Polyware.controllerSelect();
 
-        if(polywareToSelect) {
-            ArrayList<Integer> result = Polyware.controllerSelect();
-            boolean migrateToManual = result.get(0) == 1;
-            result.remove(0);
-            selectedJIDs = result;
-            if(migrateToManual) {
-                manual = true;
-            }
         } else {
+
+            boolean manual = !(nameToSelect || startToSelect);
+
+            if(!GLFW.glfwInit()) {
+                System.out.println("Failed to initialize GLFW. Falling back to WPI mode.");
+                wpiMode = true;
+            }
+
             System.out.println("============ ControlsManager Model " + Controls.model + " || Controller Selection ============");
-        }
 
-        if(!wpiMode && !(polywareToSelect && !manual)) {
+            if(!wpiMode) {
 
-            System.out.println("\nGLFW initialized.");
+                System.out.println("\nGLFW initialized.");
 
-            System.out.println("\nJID | NAME             Detected Controllers\n--------------------------------------------");
-            short detected = 0;
-            for(int jid = GLFW.GLFW_JOYSTICK_1; jid <= GLFW.GLFW_JOYSTICK_16; jid++) {
-                if(GLFW.glfwJoystickPresent(jid)) {
-                    GLFWGamepadState s = GLFWGamepadState.create();
-                    GLFW.glfwGetGamepadState(jid,s);
-                    System.out.println(" " + jid + "  |  " + GLFW.glfwGetJoystickName(jid) + (s.buttons(GLFW.GLFW_GAMEPAD_BUTTON_A) == 1? " (A is pressed)":""));
-                    detected++;
-                }
-            }
-
-            if(detected == 0) System.out.println("<No controllers detected>");
-
-            if(nameToSelect) {
-                System.out.println("\nEntering name-to-select mode.");
-                for(int i = 0; i < 15; i++) {
-                    if(GLFW.glfwJoystickPresent(i)) {
-                        String name = GLFW.glfwGetJoystickName(i);
-                        if(name != null) if(name.toLowerCase().contains("controller")||name.toLowerCase().contains("logitech")) {
-                            System.out.println("| Selected controller with JID " + i);
-                            selectedJIDs.add(i);
-                        }
-                    }
-                }
-                System.out.println("Finished selection.");
-            }
-            else if(startToSelect) {
-                boolean done = false;
-                System.out.println("\nEntering start-to-select mode. Press the START button on your controller to select it. The master controller determines when selection is over.");
-                while(!done) {
-                    for(int i = 0; i < 15; i++) {
+                System.out.println("\nJID | NAME             Detected Controllers\n--------------------------------------------");
+                short detected = 0;
+                for(int jid = GLFW.GLFW_JOYSTICK_1; jid <= GLFW.GLFW_JOYSTICK_16; jid++) {
+                    if(GLFW.glfwJoystickPresent(jid)) {
                         GLFWGamepadState s = GLFWGamepadState.create();
-                        GLFW.glfwGetGamepadState(i,s);
-                        if(!selectedJIDs.contains(i) && s.buttons(GLFW.GLFW_GAMEPAD_BUTTON_START) == 1) {
-                            selectedJIDs.add(i);
-                            if(selectedJIDs.size() == 1) System.out.println("| Master Controller selected. (JID:" + i + ")\n| | [HOLD BACK ON MASTER CONTROLLER TO FINISH SELECTION, HOLD A TO SELECT ADDITIONAL CONTROLLERS MANUALLY]");
-                            else System.out.println("| Controller " + selectedJIDs.size() + " selected. (JID:" + i + ")");
-                        } else if(s.buttons(GLFW.GLFW_GAMEPAD_BUTTON_BACK) == 1 && !selectedJIDs.isEmpty() && selectedJIDs.get(0) == i) {
-                            done = true;
-                            System.out.println("Finished selection.");
-                        } else if(s.buttons(GLFW.GLFW_GAMEPAD_BUTTON_A) == 1 && !selectedJIDs.isEmpty() && selectedJIDs.get(0) == i) {
-                            done = true;
-                            manual = true;
+                        GLFW.glfwGetGamepadState(jid,s);
+                        System.out.println(" " + jid + "  |  " + GLFW.glfwGetJoystickName(jid) + (s.buttons(GLFW.GLFW_GAMEPAD_BUTTON_A) == 1? " (A is pressed)":""));
+                        detected++;
+                    }
+                }
+
+                if(detected == 0) System.out.println("<No controllers detected>");
+
+                if(nameToSelect) {
+                    System.out.println("\nEntering name-to-select mode.");
+                    for(int i = 0; i < 15; i++) {
+                        if(GLFW.glfwJoystickPresent(i)) {
+                            String name = GLFW.glfwGetJoystickName(i);
+                            if(name != null) if(name.toLowerCase().contains("controller")||name.toLowerCase().contains("logitech")) {
+                                System.out.println("| Selected controller with JID " + i);
+                                selectedJIDs.add(i);
+                            }
                         }
                     }
-                    sleep(200);
+                    System.out.println("Finished selection.");
                 }
-            }
+                else if(startToSelect) {
+                    boolean done = false;
+                    System.out.println("\nEntering start-to-select mode. Press the START button on your controller to select it. The master controller determines when selection is over.");
+                    while(!done) {
+                        for(int i = 0; i < 15; i++) {
+                            GLFWGamepadState s = GLFWGamepadState.create();
+                            GLFW.glfwGetGamepadState(i,s);
+                            if(!selectedJIDs.contains(i) && s.buttons(GLFW.GLFW_GAMEPAD_BUTTON_START) == 1) {
+                                selectedJIDs.add(i);
+                                if(selectedJIDs.size() == 1) System.out.println("| Master Controller selected. (JID:" + i + ")\n| | [HOLD BACK ON MASTER CONTROLLER TO FINISH SELECTION, HOLD A TO SELECT ADDITIONAL CONTROLLERS MANUALLY]");
+                                else System.out.println("| Controller " + selectedJIDs.size() + " selected. (JID:" + i + ")");
+                            } else if(s.buttons(GLFW.GLFW_GAMEPAD_BUTTON_BACK) == 1 && !selectedJIDs.isEmpty() && selectedJIDs.get(0) == i) {
+                                done = true;
+                                System.out.println("Finished selection.");
+                            } else if(s.buttons(GLFW.GLFW_GAMEPAD_BUTTON_A) == 1 && !selectedJIDs.isEmpty() && selectedJIDs.get(0) == i) {
+                                done = true;
+                                manual = true;
+                            }
+                        }
+                        sleep(200);
+                    }
+                }
 
-            if(manual) {
-                System.out.println("\nEntering manual mode. [ENTER \"DONE\" TO FINISH SELECTION]");
-                while(true) {
+                if(manual) {
+                    System.out.println("\nEntering manual mode. [ENTER \"DONE\" TO FINISH SELECTION]");
                     Scanner sc = new Scanner(System.in);
-                    System.out.print("| [As controller " + (selectedJIDs.size()+1) + "] Enter joystick by JID: ");
-                    String input = sc.nextLine();
-                    if(Objects.equals(input,"done")) break;
-                    try { if(!selectedJIDs.contains(Integer.parseInt(input))) {
-                        selectedJIDs.add(Integer.parseInt(input));
-                        if(selectedJIDs.size() == 1) System.out.println("| | Master Controller selected. (JID:" + input + ")");
-                        else System.out.println("| | Controller " + selectedJIDs.size() + " selected. (JID:" + input + ")");
-                    } else {
-                        System.out.println("| | (!) That JID is already selected as Controller " + selectedJIDs.indexOf(Integer.parseInt(input)));
-                    } } catch(Exception ignored) {}
+                    while(true) {
+                        System.out.print("| [As controller " + (selectedJIDs.size()+1) + "] Enter joystick by JID: ");
+                        String input = sc.nextLine();
+                        if(Objects.equals(input,"done")) break;
+                        try { if(!selectedJIDs.contains(Integer.parseInt(input))) {
+                            selectedJIDs.add(Integer.parseInt(input));
+                            if(selectedJIDs.size() == 1) System.out.println("| | Master Controller selected. (JID:" + input + ")");
+                            else System.out.println("| | Controller " + selectedJIDs.size() + " selected. (JID:" + input + ")");
+                        } else {
+                            System.out.println("| | (!) That JID is already selected as Controller " + selectedJIDs.indexOf(Integer.parseInt(input)));
+                        } } catch(Exception ignored) {}
+                    }
+                    sc.close();
+                    System.out.println("Finished Selection.");
                 }
-                System.out.println("Finished Selection.");
-            }
 
-            System.out.println();
+                System.out.println();
 
-            for(int i = 0; i < selectedJIDs.size(); i++) controllers.add(new Controller());
+                for(int i = 0; i < selectedJIDs.size(); i++) controllers.add(new Controller());
 
-        } else {
-            if(startToSelect) System.out.println("(!) Start-to-select is not compatible with WPIMode.");
-            if(nameToSelect) System.out.println("(!) Name-to-select is not compatible with WPIMode.");
-            System.out.println("WPI Mode - Add controllers by their port number. Type \"done\" to finish.");
-            Scanner sc = new Scanner(System.in);
-            while(true) {
-                System.out.print("| [As controller " + controllers.size() + "] Enter port number: ");
-                String input = sc.nextLine();
-                if(input.equals("done")) break;
-                try {
-                    int in = Integer.parseInt(input);
-                    Controller controller = new Controller();
-                    boolean add = true;
-                    for(XboxControllerAdapter adapter : xboxControllerAdapters) {
-                        if(adapter.xboxController.port == in) {
-                            System.out.println("| (!) That port is already added.");
-                            add = false;
+            } else {
+                if(startToSelect) System.out.println("(!) Start-to-select is not compatible with WPIMode.");
+                if(nameToSelect) System.out.println("(!) Name-to-select is not compatible with WPIMode.");
+                System.out.println("WPI Mode - Add controllers by their port number. Type \"done\" to finish.");
+                Scanner sc = new Scanner(System.in);
+                while(true) {
+                    System.out.print("| [As controller " + controllers.size() + "] Enter port number: ");
+                    String input = sc.nextLine();
+                    if(input.equals("done")) break;
+                    try {
+                        int in = Integer.parseInt(input);
+                        Controller controller = new Controller();
+                        boolean add = true;
+                        for(XboxControllerAdapter adapter : xboxControllerAdapters) {
+                            if(adapter.xboxController.port == in) {
+                                System.out.println("| (!) That port is already added.");
+                                add = false;
+                            }
                         }
-                    }
-                    // These two are using the same object, so they will sync, which is kinda beautiful
-                    if(add) {
-                        xboxControllerAdapters.add(new XboxControllerAdapter(new XboxController(0),controller));
-                        controllers.add(controller);
-                    }
-                } catch(Exception ignored) {}
+                        // These two are using the same object, so they will sync, which is kinda beautiful
+                        if(add) {
+                            xboxControllerAdapters.add(new XboxControllerAdapter(new XboxController(0),controller));
+                            controllers.add(controller);
+                        }
+                    } catch(Exception ignored) {}
+                }
+                sc.close();
+
             }
 
+            Controls.setControllers(controllers);
         }
-
-        Controls.setControllers(controllers);
-
     }
 
     public static void process() {

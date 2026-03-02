@@ -1,0 +1,2 @@
+selection--use-polyware: true
+selection--mode: start
