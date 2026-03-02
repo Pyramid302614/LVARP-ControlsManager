@@ -18,7 +18,7 @@ public class Controls {
 
     private static boolean suppressJoystickOutput = false;
 
-    public static ArrayList<Controller> controllers;
+    public static ArrayList<Controller> controllers = new ArrayList<>();
 
     private static final ArrayList<Control> controls = new ArrayList<>();
 
@@ -27,12 +27,6 @@ public class Controls {
     public enum JoystickComponents { A, B };
     public enum ComponentTypes { Binary, Threshold, Joystick };
 
-
-    private static int[] allControllers() {
-        int[] c = new int[controllers.size()];
-        for(int i = 0; i < c.length; i++) c[i] = i+1;
-        return c;
-    }
 
     public static Control addControl(String name, BinaryComponents component) {
         Control c = newControl(name,component);
@@ -81,10 +75,10 @@ public class Controls {
     }
 
     public static Control newControl(String name, BinaryComponents component, String condition) {
-        return newControl(name,component,condition,allControllers());
+        return newControl(name,component,condition,new int[0]).allControllers();
     }
     public static Control newControl(String name, BinaryComponents component) {
-        return newControl(name,component,"ACTIVE",allControllers());
+        return newControl(name,component,"ACTIVE",new int[0]).allControllers();
     }
     public static Control newControl(String name, BinaryComponents component, int[] controllers) {
         return newControl(name,component,"ACTIVE",controllers);
@@ -93,10 +87,10 @@ public class Controls {
         return new Control(name,component,condition,controllers);
     }
     public static Control newControl(String name, ThresholdComponents component, String condition) {
-        return newControl(name,component,condition,allControllers());
+        return newControl(name,component,condition,new int[0]).allControllers();
     }
     public static Control newControl(String name, ThresholdComponents component) {
-        return newControl(name,component,"GREATER_THAN:0",allControllers());
+        return newControl(name,component,"GREATER_THAN:0",new int[0]).allControllers();
     }
     public static Control newControl(String name, ThresholdComponents component, int[] controllers) {
         return newControl(name,component,"GREATER_THAN:0",controllers);
@@ -105,7 +99,7 @@ public class Controls {
         return new Control(name,component,condition,controllers);
     }
     public static Control newControl(String name, JoystickComponents component, String condition) {
-        return newControl(name,component,condition,allControllers());
+        return newControl(name,component,condition,new int[0]).allControllers();
     }
     public static Control newControl(String name, JoystickComponents component, String condition, int[] controllers) {
         return new Control(name,component, condition, controllers);
@@ -123,17 +117,18 @@ public class Controls {
     }
 
     public static Control getControl(String name) {
-        for(int i = 0; i < controls.size(); i++) {
-            if(controls.get(i).name.equals(name)) return controls.get(i);
+        for(Control control : controls) {
+            if(control.name.equals(name)) return control;
         }
         if(errorLoggerOn) System.out.println("[ControlsManager:ErrorLogger] conditionResolve("+name+") : invalid control name");
         return null;
     }
 
     public static boolean conditionResolve(String name) {
-        Control c = getControl(name);
-        if(c != null) for(int i = 0; i < c.controllers.length; i++) {
-            if(c.conditionResolve(controllers.get(c.controllers[i]-1))) return true;
+        Control control = getControl(name);
+        if(control != null) for(Integer controller : control.controllers) {
+            if(controllers.size() >= controller-1)
+                if(control.conditionResolve(controllers.get(controller-1))) return true;
         }
         return false;
     }
@@ -150,23 +145,34 @@ public class Controls {
 
     public static void processAll() {
 
-        // Controls Logger
-        for(Control control : controls) {
+        // Controls Processor
+         for(Control control : controls) {
             boolean resolved = true;
-            for(Integer controller : control.controllers) {
-                if(!control.conditionResolve(controllers.get(controller-1))) resolved = false;
-                for(Control linked : control.linkedControls)
-                    if(!linked.conditionResolve(controllers.get(controller-1))) resolved = false;
-            }
-            control.conditionTrue = resolved;
+             if(control.allControllers) {
+                 for(Controller controller : controllers) {
+                     if(control.conditionResolve(controller)) resolved = false;
+                     for(Control linked : control.linkedControls)
+                         if(!linked.conditionResolve(controller)) resolved = false;
+                 }
+             } else {
+                 for(Integer controller : control.controllers) {
+                     if(controllers.size() >= controller) {
+                         if(control.conditionResolve(controllers.get(controller-1))) resolved = false;
+                         for(Control linked : control.linkedControls)
+                             if(!linked.conditionResolve(controllers.get(controller-1))) resolved = false;
+                     }
+                 }
+             }
+             if(controllers.isEmpty() || control.controllers.length == 0) resolved = false; // If no controllers
+             control.conditionTrue = resolved;
             if(controlsLoggerOn && (control.conditionWasTrue != control.conditionTrue))
                 System.out.println("[ControlsManager:ControlsLogger] Control \"" + control.name + "\" new state detected: " + control.conditionTrue);
             control.process(); // Contains boundFunction execution code
             control.conditionWasTrue = resolved;
         }
 
-        // Input Logger
-        for(int i = 0; i < controllers.size(); i++) {
+        // Input Processor
+        if(!controllers.isEmpty()) for(int i = 0; i < controllers.size(); i++) {
             if(inputLoggerControllers.isEmpty() || inputLoggerControllers.contains(i+1)) {
                 Controller controller = controllers.get(i);
                 for(Component component : controller.components) {

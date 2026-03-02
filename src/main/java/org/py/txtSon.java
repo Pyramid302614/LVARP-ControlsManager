@@ -16,10 +16,12 @@ public class txtSon {
         try {
             Scanner sc = new Scanner(file);
             while(true) {
-                String next = sc.nextLine();
+                String next = null;
+                try { next = sc.nextLine(); } catch(Exception ignored) {}
                 if(next == null) break;
                 contents.add(next);
             }
+            sc.close();
         } catch(FileNotFoundException e) {
             if(Controls.errorLoggerOn) System.out.println("[ControlsManager:ErrorLogger] File not found: " + file.getAbsolutePath());
         }

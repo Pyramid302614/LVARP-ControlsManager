@@ -12,6 +12,7 @@ public class Control {
     public ArrayList<Control> linkedControls = new ArrayList<>();
 
     public int[] controllers;
+    public boolean allControllers = false;
     public String name;
     
     private String condition;
@@ -41,6 +42,10 @@ public class Control {
         this.condition = condition;
         type = Controls.ComponentTypes.Joystick;
         this.controllers = controllers;
+    }
+    public Control allControllers() {
+        allControllers = true;
+        return this;
     }
 
     public Control linkControl(Control control) {

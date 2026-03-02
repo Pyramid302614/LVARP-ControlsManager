@@ -17,35 +17,41 @@ import java.util.Scanner;
 
 public class Main {
 
-    private static boolean wpiMode = false;
+    public static final String configPath = System.getProperty("user.dir")+"/src/main/java/org/py/config.txt";
 
-    public static HashMap<String,String> config = txtSon.getData(System.getProperty("/src/main/java/org/py/config.txt"));
+    public static HashMap<String,String> config = txtSon.getData(configPath);
+
+    private static boolean wpiMode = config.get("wpi-mode").equals("true");
 
     private static final boolean startToSelect = config.get("selection--mode").equals("start-to-select"); // Autoselects if joystick Start button (Special Button B) is pressed
     private static final boolean nameToSelect = config.get("selection--mode").equals("name-to-select"); // Autoselects joystick if it contains "Controller" in the name (Recommended only if one controller is being used)
-    private static final boolean polyware = config.get("selection--use-polyware").equals("true");
+    private static boolean polyware = config.get("selection--use-polyware").equals("true");
 
     // (!) Start-to-select and Name-to-select is not compatible with WPIMode.
 
 
     public static ArrayList<Integer> selectedJIDs = new ArrayList<>(); // GLFW Mode
-    public static ArrayList<Controller> controllers = new ArrayList<>();
     public static ArrayList<XboxControllerAdapter> xboxControllerAdapters = new ArrayList<>(); // WPI Mode
 
     public static void init() {
 
+        ArrayList<Controller> controllers = new ArrayList<>();
+
+        if(!GLFW.glfwInit()) {
+            System.out.println("Failed to initialize GLFW. Falling back to WPI mode.");
+            wpiMode = true;
+            polyware = false;
+        }
+
         if(polyware) {
 
-            Polyware.controllerSelect();
+            String mode = config.get("selection--mode");
+            if(mode == null && Controls.errorLoggerOn) System.out.println("[ControlsManager:ControllerSelection] Mode not defined in config. Please define: \"selection--mode\"");
+            else if(mode != null) Polyware.controllerSelection(mode);
 
         } else {
 
             boolean manual = !(nameToSelect || startToSelect);
-
-            if(!GLFW.glfwInit()) {
-                System.out.println("Failed to initialize GLFW. Falling back to WPI mode.");
-                wpiMode = true;
-            }
 
             System.out.println("============ ControlsManager Model " + Controls.model + " || Controller Selection ============");
 
@@ -161,8 +167,8 @@ public class Main {
 
     public static void process() {
 
-        if(!wpiMode) for(int i = 0; i < selectedJIDs.size(); i++) {
-            Controller controller = controllers.get(i);
+        if(!wpiMode) for(int i = 0; i < Controls.controllers.size(); i++) {
+            Controller controller = Controls.controllers.get(i);
             GLFWGamepadState state = GLFWGamepadState.create();
             if(GLFW.glfwGetGamepadState(selectedJIDs.get(i),state)) {
                 controller.getComponent(Controls.BinaryComponents.A).value = state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_A);
