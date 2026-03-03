@@ -20,7 +20,6 @@ public class StartToSelectSelection {
     private static ArrayList<Integer> selectedJIDs = new ArrayList<>();
     private static ArrayList<Integer> presentJIDs = new ArrayList<>();
     private static boolean[] startPressed = new boolean[16];
-    private static int[] selectTimers = new int[16];
 
     public static void process() {
 
@@ -39,13 +38,9 @@ public class StartToSelectSelection {
                 GLFWGamepadState state = GLFWGamepadState.create();
                 if(GLFW.glfwGetGamepadState(jid, state)) {
                     if(state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_START) == 1) {
-                        selectTimers[jid]--;
-                        if(selectTimers[jid] == 0) {
+                        if(!startPressed[jid]) { // Just pressed
                             if(selectedJIDs.contains(jid)) selectedJIDs.remove((Integer) jid);
                             else selectedJIDs.add(jid);
-                        }
-                        if(!startPressed[jid]) { // Just pressed
-                            selectTimers[jid] = 50;
                         }
                         startPressed[jid] = true;
                     } else startPressed[jid] = false;
@@ -55,6 +50,7 @@ public class StartToSelectSelection {
                 } else startPressed[jid] = false;
             }
         }
+
 
 
         // JFrame repainting
@@ -78,12 +74,13 @@ public class StartToSelectSelection {
             } else {
                 moduleYOff[jid][0] = 90.0;
             }
-            if(selectTimers[jid] > 0) {
-                moduleYOff[jid][0] += 20+(50.0-selectTimers[jid])/5;
+            if(!presentJIDs.contains(jid)) {
+                moduleYOff[jid][0] = 0;
+                moduleYOff[jid][1] = 0;
             }
             moduleYOff[jid][1] += (moduleYOff[jid][0]-moduleYOff[jid][1])/5.0;
 
-            g.setColor(new Color(180,180,180));
+            g.setColor(new Color(200,200,200));
             g.fillRoundRect(
                     xOffset+20,
                     Polyware.jf.getHeight()-(int)Math.round(moduleYOff[jid][1]),
@@ -92,6 +89,14 @@ public class StartToSelectSelection {
                     10,
                     10
             );
+            g.setColor(new Color(180,180,180));
+            int[] oval = new int[] {
+                    xOffset+20 + (int) Math.round(100.0 * 0.20), // x
+                    (int) Math.round(Polyware.jf.getHeight()-moduleYOff[jid][1] + 100.0 * 0.20), // y
+                    (int) Math.round(100 * 0.60), // w
+                    (int) Math.round(100 * 0.60) // h
+            };
+            g.fillOval(oval[0],oval[1],oval[2],oval[3]);
 
             xOffset += 120;
 
