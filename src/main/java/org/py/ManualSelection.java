@@ -268,6 +268,7 @@ public class ManualSelection {
         for(int i = 0; i < selectedJIDs.size(); i++) controllers.add(new Controller());
         Controls.setControllers(controllers);
         Main.selectedJIDs = selectedJIDs;
+        System.out.println("[ControlsManager:Polyware] Updated controllers: JIDs: " + selectedJIDs.toString());
         Sandbox.ready = true;
         new Sandbox();
     }

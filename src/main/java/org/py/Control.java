@@ -48,8 +48,24 @@ public class Control {
         return this;
     }
 
-    public Control linkControl(Control control) {
-        linkedControls.add(control);
+    public Control linkControl(Controls.BinaryComponents component) {
+        linkedControls.add(new Control("link",component,"ACTIVE",new int[0]));
+        return this;
+    }
+    public Control linkControl(Controls.BinaryComponents component, String condition) {
+        linkedControls.add(new Control("link",component,condition,new int[0]));
+        return this;
+    }
+    public Control linkControl(Controls.ThresholdComponents component) {
+        linkedControls.add(new Control("link",component,"GREATER_THAN:0",new int[0]));
+        return this;
+    }
+    public Control linkControl(Controls.ThresholdComponents component, String condition) {
+        linkedControls.add(new Control("link",component,condition,new int[0]));
+        return this;
+    }
+    public Control linkControl(Controls.JoystickComponents component, String condition) {
+        linkedControls.add(new Control("link",component,condition,new int[0]));
         return this;
     }
 

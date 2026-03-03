@@ -52,6 +52,7 @@ public class Polyware {
     }
     public static void process() {
         if(mode == 2) ManualSelection.process();
+        if(mode == 3) StartToSelectSelection.process();
     }
 
     private static Font calSans;
@@ -68,6 +69,11 @@ public class Polyware {
             ManualSelection.calSans = calSans;
             ManualSelection.draw(g);
         }
+        if(mode == 3) {
+            StartToSelectSelection.calSans = calSans;
+            StartToSelectSelection.draw(g);
+        }
+
 
     }
 
@@ -77,6 +83,9 @@ public class Polyware {
         switch(mode) {
             case "manual":
                 ManualSelection.start(); break;
+            case "startToSelect":
+            case "start-to-select":
+                StartToSelectSelection.start(); break;
             default:
                 if(Controls.errorLoggerOn) System.out.println("[ControlsManager:Polyware] Unknown controller selection mode: " + mode); break;
         }

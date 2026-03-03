@@ -150,14 +150,14 @@ public class Controls {
             boolean resolved = true;
              if(control.allControllers) {
                  for(Controller controller : controllers) {
-                     if(control.conditionResolve(controller)) resolved = false;
+                     if(!control.conditionResolve(controller)) resolved = false;
                      for(Control linked : control.linkedControls)
                          if(!linked.conditionResolve(controller)) resolved = false;
                  }
              } else {
                  for(Integer controller : control.controllers) {
                      if(controllers.size() >= controller) {
-                         if(control.conditionResolve(controllers.get(controller-1))) resolved = false;
+                         if(!control.conditionResolve(controllers.get(controller-1))) resolved = false;
                          for(Control linked : control.linkedControls)
                              if(!linked.conditionResolve(controllers.get(controller-1))) resolved = false;
                      }

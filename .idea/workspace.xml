@@ -4,18 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b1d7000d-cf20-4ed8-9f52-5335d3c645f8" name="Changes" comment="Adds txtSon">
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/py/ManualSelection.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/org/py/StartToSelectSelection.java" afterDir="false" />
+    <list default="true" id="b1d7000d-cf20-4ed8-9f52-5335d3c645f8" name="Changes" comment="Config and classes for selection modes and general refactoring (Plus controller non-appearance error proofing)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/py/Control.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/py/Control.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/py/Controls.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/py/Controls.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/py/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/py/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/py/ManualSelection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/py/ManualSelection.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/py/Polyware.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/py/Polyware.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/py/Sandbox.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/py/Sandbox.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/py/TestingEnvironment.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/py/TestingEnvironment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/py/StartToSelectSelection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/py/StartToSelectSelection.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/py/Usage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/py/Usage.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/org/py/config.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/py/config.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/py/txtSon.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/py/txtSon.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,7 +129,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772414649006</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Config and classes for selection modes and general refactoring (Plus controller non-appearance error proofing)">
+      <option name="closed" value="true" />
+      <created>1772460123446</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1772460123446</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -141,6 +147,7 @@
     <MESSAGE value="Stablizes polyware, adds selectors and stuff" />
     <MESSAGE value="(Unfinished) Polyware incorporating into Main.java" />
     <MESSAGE value="Adds txtSon" />
-    <option name="LAST_COMMIT_MESSAGE" value="Adds txtSon" />
+    <MESSAGE value="Config and classes for selection modes and general refactoring (Plus controller non-appearance error proofing)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Config and classes for selection modes and general refactoring (Plus controller non-appearance error proofing)" />
   </component>
 </project>

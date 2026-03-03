@@ -47,8 +47,7 @@ public class Usage {
 
         // You can link controls and both of them will have to be true for the control to resolve
         Controls.addControl("cheatcode1",Controls.BinaryComponents.SA,new int[] { 1 })
-                .linkControl(Controls.newControl("cheatcode1-linked",Controls.ThresholdComponents.AX,"GREATER_THAN:0.5",new int[] { 2 }));
-                            // (Name doesn't matter)
+                .linkControl(Controls.ThresholdComponents.AX,"GREATER_THAN:0.5");
 
         // ========================= FUNCTIONS =========================
 
