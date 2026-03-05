@@ -152,7 +152,7 @@ public class Main {
                         }
                         // These two are using the same object, so they will sync, which is kinda beautiful
                         if(add) {
-                            xboxControllerAdapters.add(new XboxControllerAdapter(new XboxController(0),controller));
+                            xboxControllerAdapters.add(new XboxControllerAdapter(new XboxController(in),controller));
                             controllers.add(controller);
                         }
                     } catch(Exception ignored) {}
