@@ -4,6 +4,8 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWGamepadState;
 
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class StartToSelectSelection {
@@ -44,13 +46,12 @@ public class StartToSelectSelection {
                         }
                         startPressed[jid] = true;
                     } else startPressed[jid] = false;
-                    if(state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_BACK) == 1) {
+                    if(Polyware.jf != null && selectedJIDs.indexOf(jid) == 0 && state.buttons(GLFW.GLFW_GAMEPAD_BUTTON_BACK) == 1) {
                         finish();
                     }
                 } else startPressed[jid] = false;
             }
         }
-
 
 
         // JFrame repainting
@@ -67,6 +68,19 @@ public class StartToSelectSelection {
         for(Integer jid : presentJIDs) {
 
             // Body rendering
+
+            // JID Number
+            if(selectedJIDs.contains(jid)) {
+
+                g.setColor(new Color(0,0,0));
+                g.setFont(calSans.deriveFont(24f));
+                g.drawString(
+                        selectedJIDs.indexOf(jid)+1+"",
+                        xOffset+70-g.getFontMetrics().stringWidth(selectedJIDs.indexOf(jid)+1+"")/2,
+                        Polyware.jf.getHeight()-200
+                );
+
+            }
 
             // Y calculating
             if(selectedJIDs.contains(jid)) {

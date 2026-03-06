@@ -11,8 +11,8 @@ public class Sandbox {
         Controls.addControl("test", Controls.BinaryComponents.A,new int[] {1})
                 .linkControl(Controls.BinaryComponents.B);
 
-        Controls.addControl("test2",Controls.ThresholdComponents.AX,"GREATER_THAN:0");
-
+        Controls.addControl("test2",Controls.ThresholdComponents.AX,"GREATER_THAN:0.5");
+        Controls.inputLogger(true,false,2);
     }
 
     public static boolean ready = false;

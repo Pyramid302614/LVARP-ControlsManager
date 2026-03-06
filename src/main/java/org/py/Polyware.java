@@ -48,7 +48,7 @@ public class Polyware {
     }
     public static void exit() {
         System.out.println("[ControlsManager:Polyware] Closing Polyware instance...");
-        jf.dispose();
+        if(jf != null) jf.dispose();
     }
     public static void process() {
         if(mode == 2) ManualSelection.process();
