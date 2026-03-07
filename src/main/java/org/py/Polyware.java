@@ -62,7 +62,6 @@ public class Polyware {
                     Font.TRUETYPE_FONT,new File(assetsDirectory+"/CalSans.ttf")
             );
         } catch(Exception ignored) {
-            System.out.println(ignored);
             calSans = new Font("Arial",Font.PLAIN,12);
         }
         if(mode == 2) {

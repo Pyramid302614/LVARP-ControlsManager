@@ -198,8 +198,8 @@ public class Main {
                 controller.getComponent(Controls.JoystickComponents.B).value.y = state.axes(GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y);
             }
         }
-        else for(int i = 0; i < xboxControllerAdapters.size(); i++) {
-            xboxControllerAdapters.get(i).sync();
+        else for(XboxControllerAdapter adapter : xboxControllerAdapters) {
+            adapter.sync();
         }
 
         Controls.processAll();

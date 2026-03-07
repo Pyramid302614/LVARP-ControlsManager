@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Sandbox {
 
-    public Sandbox() {
+    public static void sandboxStart() {
 
         Controls.controlsLogger(true);
 
@@ -12,7 +12,7 @@ public class Sandbox {
                 .linkControl(Controls.BinaryComponents.B);
 
         Controls.addControl("test2",Controls.ThresholdComponents.AX,"GREATER_THAN:0.5");
-        Controls.inputLogger(true,false,2);
+
     }
 
     public static boolean ready = false;

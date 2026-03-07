@@ -23,8 +23,6 @@ public class XboxController {
     public boolean jb = false; // Right Joystick Push
     public boolean sa = false; // Special Button A (Top Left)
     public boolean sb = false; // Special Button B (Top Right)
-    public boolean sc = false; // Special Button C (Bottom Left)
-    public boolean bb = false; // Big Button
 
     public double lt = 0.0; // Left Trigger
     public double rt = 0.0; // Right Trigger
@@ -54,10 +52,10 @@ public class XboxController {
     }
 
     public boolean getLeftStickButton() {
-        return lb;
+        return ja;
     }
     public boolean getRightStickButton() {
-        return rb;
+        return jb;
     }
 
     public double getLeftX() {

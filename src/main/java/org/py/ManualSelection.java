@@ -12,20 +12,20 @@ public class ManualSelection {
     public static Font calSans = new Font("Arial",Font.PLAIN,12);
 
     private static boolean focused = false;
-    private static double[] focusIndicator = new double[2]; // T, C
-    private static double[][] modulePositions = new double[16][4]; // TX, CX, TY, CY
-    private static double[][] moduleDimensions = new double[16][4]; // TW, CW, TH, CH
-    private static boolean[] presentJIDs = new boolean[16];
-    private static boolean[] previousPresentJIDs = new boolean[16];
-    private static boolean[] justAddedJIDs = new boolean[16];
-    private static double[][] aJumps = new double[16][2]; // T, C
-    private static double[] selectorPos = new double[2]; // T, C
-    private static double[] selectorDim = new double[2]; // T, C
+    private static final double[] focusIndicator = new double[2]; // T, C
+    private static final double[][] modulePositions = new double[16][4]; // TX, CX, TY, CY
+    private static final double[][] moduleDimensions = new double[16][4]; // TW, CW, TH, CH
+    private static final boolean[] presentJIDs = new boolean[16];
+    private static final boolean[] previousPresentJIDs = new boolean[16];
+    private static final boolean[] justAddedJIDs = new boolean[16];
+    private static final double[][] aJumps = new double[16][2]; // T, C
+    private static final double[] selectorPos = new double[2]; // T, C
+    private static final double[] selectorDim = new double[2]; // T, C
 
     private static int glfwInitTimer = 0;
     private static int selector = 0;
     private static int availableControllers = 0;
-    private static ArrayList<Integer> selectedJIDs = new ArrayList<>();
+    private static final ArrayList<Integer> selectedJIDs = new ArrayList<>();
     public static void start() {
 
         Polyware.mode = 2;
@@ -101,9 +101,7 @@ public class ManualSelection {
         if(selector >= availableControllers && selector != 0) {
             selector = availableControllers - 1;
         }
-        for(int i = GLFW.GLFW_JOYSTICK_1; i < GLFW.GLFW_JOYSTICK_16; i++) {
-            previousPresentJIDs[i] = presentJIDs[i];
-        }
+        System.arraycopy(presentJIDs, GLFW.GLFW_JOYSTICK_1, previousPresentJIDs, GLFW.GLFW_JOYSTICK_1, GLFW.GLFW_JOYSTICK_16);
         glfwInitTimer--;
         if(glfwInitTimer <= 0) {
             glfwInitTimer = 100;
@@ -220,7 +218,8 @@ public class ManualSelection {
                 int jumpAdd = -(int) aJumps[jid][1];
                 int jumpColorAdd = (int) aJumps[jid][1] * 5;
 
-                g.setColor(new Color(180 - dimAmount, 180 - dimAmount + jumpColorAdd, 180 - dimAmount));
+                Color tc1 = new Color(180 - dimAmount, 180 - dimAmount + jumpColorAdd, 180 - dimAmount);
+                g.setColor(tc1);
                 g.fillRoundRect(pos.x, pos.y, dim.width, dim.height, 20, 20);
 
                 if(selectedJIDs.contains(jid)) {
@@ -237,12 +236,13 @@ public class ManualSelection {
                 g.setColor(new Color(200 - dimAmount, 200 - dimAmount + jumpColorAdd, 200 - dimAmount));
                 g.fillRoundRect(pos.x, pos.y, dim.width, dim.height, 20, 20);
 
-                g.setColor(new Color(150 - dimAmount, 150 - dimAmount + jumpColorAdd, 150 - dimAmount));
+                Color tc2 = new Color(150 - dimAmount, 150 - dimAmount + jumpColorAdd, 150 - dimAmount);
+                g.setColor(tc2);
                 g.setFont(calSans.deriveFont(12f + (float) ( moduleDimensions[jid][3] / 2 )));
                 g.drawString(Integer.toString(jid), pos.x + 8, pos.y + 8 + (int) Math.round(12 + moduleDimensions[jid][3] / 2));
 
 
-                g.setColor(new Color(180 - dimAmount, 180 - dimAmount + jumpColorAdd, 180 - dimAmount));
+                g.setColor(tc1);
                 int[] oval = new int[] {
                         pos.x + (int) Math.round(dim.width * 0.20), // x
                         pos.y + (int) Math.round(dim.height * 0.20), // y
@@ -251,7 +251,7 @@ public class ManualSelection {
                 };
                 g.fillOval(oval[0], oval[1], oval[2], oval[3]);
 
-                g.setColor(new Color(150 - dimAmount, 150 - dimAmount + jumpColorAdd, 150 - dimAmount));
+                g.setColor(tc2);
                 g.setFont(calSans.deriveFont(30f + (float) ( moduleDimensions[jid][3] ) / 2));
                 g.drawString("A", (int) Math.round(oval[0] + oval[2] / 2.0 - g.getFontMetrics().stringWidth("A") / 2.0), (int) Math.round(oval[1] + oval[3] / 2.0 + dim.height * 0.09));
                 x += 100 + 20;
@@ -270,7 +270,7 @@ public class ManualSelection {
         Main.selectedJIDs = selectedJIDs;
         System.out.println("[ControlsManager:Polyware] Updated controllers: JIDs: " + selectedJIDs.toString());
         Sandbox.ready = true;
-        new Sandbox();
+        Sandbox.sandboxStart();
     }
 
 }
